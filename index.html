@@ -1976,26 +1976,6 @@ function populateAdminSchoolDropdown() {
           <tbody>${rows || '<tr><td colspan="7" style="text-align:center; padding:15px;">நிலுவைக் கோப்புகள் எதுவும் இல்லை.</td></tr>'}</tbody>
         </table>
       
-<!-- 🔳 QR Code Modal -->
-<div id="qrModal" class="modal">
-  <div class="modal-content qr-modal-box">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0;color:#111827;">🔳 கோப்பு QR Code</h3>
-      <button class="btn btn-sm btn-danger" onclick="closeFileQR()">மூடு ✕</button>
-    </div>
-    <div id="qrFileTitle" style="margin-top:10px;font-weight:800;color:#0c4a6e;"></div>
-    <div id="qrCodeCanvas"></div>
-    <div id="qrStatusHint" style="font-size:.84rem;color:#475569;margin-bottom:10px;">
-      Scan செய்தவுடன் இந்த தளத்தின் QR Status பக்கத்தில் Google Cloud-ல் இருந்து தற்போதைய கோப்பு நிலை திறக்கும்.
-    </div>
-    <div id="qrStatusLink" class="qr-status-link"></div>
-    <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;">
-      <button class="btn btn-secondary btn-sm" onclick="downloadCurrentQR()">⬇️ QR படம்</button>
-      <button class="btn btn-sm" onclick="openCurrentQRLink()">🌐 Status திற</button>
-    </div>
-  </div>
-</div>
-
 </body>
       </html>
     `);
@@ -2746,36 +2726,53 @@ function toggleAdminTool(id){
   let currentQRLink = "";
 
   function openFileQR(officeNo) {
-    const file = getFileSafely(officeNo);
-    if (!file) {
-      alert("கோப்பு தகவல் கிடைக்கவில்லை.");
-      return;
+    try {
+      const file = getFileSafely(officeNo);
+
+      if (!file) {
+        alert("கோப்பு தகவல் கிடைக்கவில்லை.");
+        return;
+      }
+
+      const githubBase = "https://satheeshdcgobi-commits.github.io/deoerd/";
+      currentQRLink =
+        githubBase + "?fileStatus=" +
+        encodeURIComponent(String(officeNo));
+
+      const modal = document.getElementById("qrModal");
+      const box = document.getElementById("qrCodeCanvas");
+      const title = document.getElementById("qrFileTitle");
+      const link = document.getElementById("qrStatusLink");
+
+      if (!modal || !box || !title || !link) {
+        alert("QR பகுதி page-ல் ஏற்றப்படவில்லை. index.html-ஐ refresh செய்து மீண்டும் முயற்சிக்கவும்.");
+        return;
+      }
+
+      title.textContent = "கோப்பு எண்: " + officeNo;
+      link.textContent = currentQRLink;
+      box.innerHTML = "";
+
+      if (typeof QRCode === "undefined") {
+        box.innerHTML =
+          '<div style="color:#b91c1c;font-weight:700;text-align:center;">' +
+          'QR library ஏற்றப்படவில்லை. Internet connection சரிபார்க்கவும்.' +
+          '</div>';
+      } else {
+        new QRCode(box, {
+          text: currentQRLink,
+          width: 230,
+          height: 230,
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      }
+
+      modal.style.display = "flex";
+
+    } catch (err) {
+      console.error("QR Error:", err);
+      alert("QR Code திறக்க முடியவில்லை. Page-ஐ refresh செய்து மீண்டும் முயற்சிக்கவும்.");
     }
-
-    const api = 'https://script.google.com/macros/s/AKfycbwWJJUPBROgBBoRnCZTd0V9xjo6sHUgsVx-r1dWMxJWknopCQSjoUFr4Nm3SbtARWR5/exec';
-    currentQRLink = "https://satheeshdcgobi-commits.github.io/deoerd/" + "?fileStatus=" + encodeURIComponent(officeNo);
-
-    const modal = document.getElementById("qrModal");
-    const box = document.getElementById("qrCodeCanvas");
-    const title = document.getElementById("qrFileTitle");
-    const link = document.getElementById("qrStatusLink");
-
-    title.textContent = "கோப்பு எண்: " + officeNo;
-    link.textContent = currentQRLink;
-    box.innerHTML = "";
-
-    if (typeof QRCode === "undefined") {
-      box.innerHTML = '<div style="color:#b91c1c;font-weight:700;">QR library ஏற்றப்படவில்லை. Internet connection சரிபார்க்கவும்.</div>';
-    } else {
-      new QRCode(box, {
-        text: currentQRLink,
-        width: 230,
-        height: 230,
-        correctLevel: QRCode.CorrectLevel.M
-      });
-    }
-
-    modal.style.display = "flex";
   }
 
   function closeFileQR() {
@@ -2847,7 +2844,7 @@ function toggleAdminTool(id){
           card.innerHTML = `
             <div style="text-align:center;font-size:1.25rem;font-weight:800;color:#b91c1c;">❌ கோப்பு கிடைக்கவில்லை</div>
             <div style="text-align:center;margin-top:10px;color:#64748b;">கோப்பு எண்: <b>${escapeHtmlQR(officeNo)}</b></div>
-            <div style="text-align:center;margin-top:22px;"><button onclick="location.href='${github}'" style="border:0;border-radius:10px;padding:10px 16px;background:#0c4a6e;color:#fff;cursor:pointer;">முகப்புக்குச் செல்ல</button></div>`;
+            <div style="text-align:center;margin-top:22px;"><button onclick="location.href='/'" style="border:0;border-radius:10px;padding:10px 16px;background:#0c4a6e;color:#fff;cursor:pointer;">முகப்புக்குச் செல்ல</button></div>`;
           return;
         }
 
@@ -2890,5 +2887,26 @@ function toggleAdminTool(id){
   document.addEventListener("DOMContentLoaded", openQRStatusPage);
 
 </script>
+
+<!-- 🔳 QR Code Modal - REAL DOM -->
+<div id="qrModal" class="modal" style="display:none;">
+  <div class="modal-content qr-modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="margin:0;color:#111827;">🔳 கோப்பு QR Code</h3>
+      <button class="btn btn-sm btn-danger" onclick="closeFileQR()">மூடு ✕</button>
+    </div>
+    <div id="qrFileTitle" style="margin-top:10px;font-weight:800;color:#0c4a6e;"></div>
+    <div id="qrCodeCanvas" style="display:flex;justify-content:center;align-items:center;min-height:240px;"></div>
+    <div id="qrStatusHint" style="font-size:.84rem;color:#475569;margin:10px 0;">
+      QR-ஐ scan செய்தவுடன் கோப்பின் தற்போதைய நிலை திறக்கும்.
+    </div>
+    <div id="qrStatusLink" class="qr-status-link" style="word-break:break-all;font-size:.72rem;"></div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
+      <button class="btn btn-secondary btn-sm" onclick="downloadCurrentQR()">⬇️ QR படம்</button>
+      <button class="btn btn-sm" onclick="openCurrentQRLink()">🌐 Status திற</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
