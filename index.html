@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
   <style>
     :root {
@@ -164,7 +165,6 @@
     .btn-warning { background: #d97706; color: white; }
     .btn-edit { background: #0891b2; color: white; }
     .btn-edit:hover { background: #0e7490; }
-    .btn-sticker { background: #4f46e5; color: white; }
     .btn-notice { background: #2563eb; color: white; }
     .btn-ja { background: var(--ja-color); color: white; }
     .btn-hm { background: var(--hm-color); color: white; }
@@ -280,6 +280,14 @@
       max-height: 88vh;
       overflow-y: auto;
     }
+  
+    .btn-qr { background: #111827; color: white; }
+    .btn-qr:hover { background: #000; }
+    .qr-modal-box { max-width: 460px; text-align:center; }
+    #qrCodeCanvas { display:flex; justify-content:center; align-items:center; margin:18px auto; min-height:230px; }
+    #qrCodeCanvas img, #qrCodeCanvas canvas { margin:auto; }
+    .qr-status-link { font-size:.72rem; color:#64748b; word-break:break-all; background:#f8fafc; padding:8px; border-radius:8px; }
+
   </style>
 </head>
 <body class="theme-ADMIN">
@@ -944,7 +952,7 @@
 </div>
 
 <script>
-  const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxboRPqSl1tZvdZgXs0urYMjhHaDSob_L6hImxO0QCH_yBbk60HAPvMOS7DgMdVu447/exec";
+  const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwWJJUPBROgBBoRnCZTd0V9xjo6sHUgsVx-r1dWMxJWknopCQSjoUFr4Nm3SbtARWR5/exec";
 
   // Cloud-safe date and write helpers
   function normalizeDateOnly(value){ if(!value)return ''; const x=String(value).trim(); if(/^\d{4}-\d{2}-\d{2}/.test(x))return x.slice(0,10); const d=new Date(x); return isNaN(d.getTime())?x:d.toISOString().slice(0,10); }
@@ -1492,7 +1500,7 @@ function populateAdminSchoolDropdown() {
               <button class="btn btn-sm btn-ja" onclick="sendSingleFileWhatsApp(decodeURIComponent('${safeOfficeNo}'))" title="WhatsApp பகிர்வு">💬 WA</button>
               <button class="btn btn-sm" onclick="openStatusModal(decodeURIComponent('${safeOfficeNo}'))">நிலை</button>
               <button class="btn btn-sm btn-edit" onclick="openEditModal(decodeURIComponent('${safeOfficeNo}'))" title="விவரங்களை திருத்து">✏️ Edit</button>
-              <button class="btn btn-sm btn-sticker" onclick="printDocketSticker(decodeURIComponent('${safeOfficeNo}'))" title="அட்டை ஸ்டிக்கர்">🏷️ ஸ்டிக்கர்</button>
+              <button class="btn btn-sm btn-qr" onclick="openFileQR(decodeURIComponent('${safeOfficeNo}'))" title="QR Code">🔳 QR</button>
               ${file.status === 'முடிவுற்றது' ? `<button class="btn btn-sm btn-archive" onclick="archiveSingleFile(decodeURIComponent('${safeOfficeNo}'))" title="காப்பகத்திற்கு மாற்று">📦 Archive</button>` : ''}
               <button class="btn btn-sm btn-danger" onclick="deleteFile(decodeURIComponent('${safeOfficeNo}'))" title="கோப்பினை நீக்கு">🗑️ நீக்கு</button>
             ` : ''}
@@ -1916,121 +1924,6 @@ function populateAdminSchoolDropdown() {
   }
 
   // நீங்கள் கேட்ட வடிவிலான புதிய ஸ்டிக்கர் வடிவமைப்பு
-  function printDocketSticker(officeNo) {
-    const file = getFileSafely(officeNo);
-    if (!file) return;
-
-    const formattedDate = formatTamilDate(file.officeDate);
-    const win = window.open('', '_blank');
-    if (!win) {
-      alert("பாப்-அப் தடுக்கப்பட்டுள்ளது! பிரவுசரில் Popups-ஐ அனுமதிக்கவும்.");
-      return;
-    }
-
-    win.document.open();
-    win.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Sticker_${file.officeNo}</title>
-        <style>
-          @page { size: 105mm 72mm; margin: 4mm; }
-          body { font-family: 'Mukta Malar', 'Segoe UI', Arial, sans-serif; color: #000; margin: 0; padding: 10px; box-sizing: border-box; }
-          .sticker-box { border: 2px solid #000; border-radius: 6px; padding: 12px; box-sizing: border-box; min-height: 60mm; font-size: 0.95rem; line-height: 1.5; }
-        </style>
-      </head>
-      <body>
-        <div class="sticker-box">
-          <div style="text-align: center; font-weight: bold; margin-bottom: 8px; font-size: 1.05rem;">
-            மாவட்டக்கல்வி அலுவலகம்,<br>
-            <span style="font-size: 0.95rem;">(இடைநிலை) ஈரோடு.</span>
-          </div>
-          <div style="margin-bottom: 6px;">
-            <b>பிரிவு : அ2</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>கோப்பு எண்:</b> ${file.officeNo}
-          </div>
-          <div style="margin-bottom: 6px;">
-            <b>பள்ளியின் பெயர்:</b> ${SCHOOL_NAMES[file.schoolId] || 'Others'}
-          </div>
-          <div style="margin-bottom: 6px;">
-            <b>கோரிக்கை:</b> ${file.category || 'Common'}
-          </div>
-          <div>
-            <b>கோரிக்கை விவரம்:</b><br>
-            <div style="margin-top: 2px; font-size: 0.9rem; font-weight: normal; border-top: 1px dashed #666; padding-top: 4px;">${file.subject}</div>
-          </div>
-        </div>
-      </body>
-      </html>
-    `);
-    win.document.close();
-    setTimeout(() => { win.print(); }, 300);
-  }
-
-  function generateHandoverSlip() {
-    const pendingFiles = memoryFiles.filter(f => f.status !== 'முடிவுற்றது' && f.status !== 'நிராகரிக்கப்பட்டது');
-    let rows = '';
-
-    pendingFiles.forEach((f, i) => {
-      rows += `
-        <tr>
-          <td style="border: 1px solid #000; padding: 4px; text-align: center;">${i + 1}</td>
-          <td style="border: 1px solid #000; padding: 4px; font-weight: bold;">
-            ${f.officeNo}<br><small>${formatTamilDate(f.officeDate)}</small>
-            ${f.prevRefNo ? `<br><small style="color:#0369a1;">முந்தைய: ${f.prevRefNo}</small>` : ''}
-          </td>
-          <td style="border: 1px solid #000; padding: 4px;">${SCHOOL_NAMES[f.schoolId] || 'Others'}</td>
-          <td style="border: 1px solid #000; padding: 4px;">${f.category}</td>
-          <td style="border: 1px solid #000; padding: 4px;">${f.subject}</td>
-          <td style="border: 1px solid #000; padding: 4px;">${f.rackLocation || 'A2'}</td>
-          <td style="border: 1px solid #000; padding: 4px; font-weight: bold;">${f.currentWith || 'பிரிவு எழுத்தர்'}</td>
-        </tr>
-      `;
-    });
-
-    const win = window.open('', '_blank');
-    win.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Handover_Slip</title>
-        <style>
-          @page { size: A4 portrait; margin: 10mm; }
-          body { font-family: 'Segoe UI', Arial, sans-serif; color: #000; margin: 0; padding: 10px; }
-          table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-        </style>
-      </head>
-      <body>
-        <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 12px;">
-          <h2 style="margin:0; font-size: 1.2rem;">மாவட்டக் கல்வி அலுவலகம் (இடைநிலை), ஈரோடு</h2>
-          <h3 style="margin:3px 0 0 0; text-decoration: underline;">பிரிவு: அ2 - கோப்புகள் பொறுப்பு ஒப்படைப்புப் பதிவேடு (Charge Handover Slip)</h3>
-          <p style="margin:3px 0 0 0; font-size: 0.85rem;">ஒப்படைக்கும் நாள்: ${formatTamilDate(new Date().toISOString().slice(0,10))}</p>
-        </div>
-        <p>இவ்வலுவலக அ2 பிரிவில் தற்போது நிலுவையில் உள்ள பின்வரும் <b>${pendingFiles.length}</b> கோப்புகளின் விபரம் மற்றும் ஆவணங்கள் முழுமையாக மாற்றுப் பணியாளரிடம் ஒப்படைக்கப்படுகிறது:</p>
-        <table>
-          <thead>
-            <tr style="background:#e2e8f0;">
-              <th style="border: 1px solid #000; padding: 5px; width: 30px;">வ.எண்</th>
-              <th style="border: 1px solid #000; padding: 5px; width: 120px;">அலுவலக எண் & தேதி</th>
-              <th style="border: 1px solid #000; padding: 5px; width: 140px;">பள்ளியின் பெயர்</th>
-              <th style="border: 1px solid #000; padding: 5px; width: 70px;">வகை</th>
-              <th style="border: 1px solid #000; padding: 5px;">பொருள்</th>
-              <th style="border: 1px solid #000; padding: 5px; width: 60px;">Rack</th>
-              <th style="border: 1px solid #000; padding: 5px; width: 110px;">யாரிடம் நிலுவை</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-        <div style="margin-top: 50px; display: flex; justify-content: space-between; font-weight: bold; font-size: 0.85rem;">
-          <div><p>ஒப்படைப்பவர் கையொப்பம்<br><span style="font-weight:normal;">து.சதீஷ்குமார், உதவியாளர் (அ2)</span></p></div>
-          <div><p>பெற்றுக்கொள்பவர் கையொப்பம்<br><span style="font-weight:normal;">மாற்றுப் பொறுப்பு உதவியாளர்</span></p></div>
-          <div><p>கண்காணிப்பாளர் / PA</p></div>
-        </div>
-      </body>
-      </html>
-    `);
-    win.document.close();
-    setTimeout(() => { win.print(); }, 300);
-  }
 
   function generateAdminConsolidatedPendingSlip() {
     const pendingFiles = memoryFiles.filter(f => f.status !== 'முடிவுற்றது' && f.status !== 'நிராகரிக்கப்பட்டது');
@@ -2082,7 +1975,28 @@ function populateAdminSchoolDropdown() {
           </thead>
           <tbody>${rows || '<tr><td colspan="7" style="text-align:center; padding:15px;">நிலுவைக் கோப்புகள் எதுவும் இல்லை.</td></tr>'}</tbody>
         </table>
-      </body>
+      
+<!-- 🔳 QR Code Modal -->
+<div id="qrModal" class="modal">
+  <div class="modal-content qr-modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="margin:0;color:#111827;">🔳 கோப்பு QR Code</h3>
+      <button class="btn btn-sm btn-danger" onclick="closeFileQR()">மூடு ✕</button>
+    </div>
+    <div id="qrFileTitle" style="margin-top:10px;font-weight:800;color:#0c4a6e;"></div>
+    <div id="qrCodeCanvas"></div>
+    <div id="qrStatusHint" style="font-size:.84rem;color:#475569;margin-bottom:10px;">
+      Scan செய்தவுடன் இந்த தளத்தின் QR Status பக்கத்தில் Google Cloud-ல் இருந்து தற்போதைய கோப்பு நிலை திறக்கும்.
+    </div>
+    <div id="qrStatusLink" class="qr-status-link"></div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;">
+      <button class="btn btn-secondary btn-sm" onclick="downloadCurrentQR()">⬇️ QR படம்</button>
+      <button class="btn btn-sm" onclick="openCurrentQRLink()">🌐 Status திற</button>
+    </div>
+  </div>
+</div>
+
+</body>
       </html>
     `);
     win.document.close();
@@ -2825,6 +2739,156 @@ function toggleAdminTool(id){
   document.querySelectorAll('#adminSchoolCircularPanel .adminToolSection').forEach(x=>x.style.display='none');
   el.style.display=show?'block':'none';
 }
+
+  /* ============================================================
+     QR CODE - LIVE FILE STATUS
+     ============================================================ */
+  let currentQRLink = "";
+
+  function openFileQR(officeNo) {
+    const file = getFileSafely(officeNo);
+    if (!file) {
+      alert("கோப்பு தகவல் கிடைக்கவில்லை.");
+      return;
+    }
+
+    const api = 'https://script.google.com/macros/s/AKfycbwWJJUPBROgBBoRnCZTd0V9xjo6sHUgsVx-r1dWMxJWknopCQSjoUFr4Nm3SbtARWR5/exec';
+    currentQRLink = "https://satheeshdcgobi-commits.github.io/deoerd/" + "?fileStatus=" + encodeURIComponent(officeNo);
+
+    const modal = document.getElementById("qrModal");
+    const box = document.getElementById("qrCodeCanvas");
+    const title = document.getElementById("qrFileTitle");
+    const link = document.getElementById("qrStatusLink");
+
+    title.textContent = "கோப்பு எண்: " + officeNo;
+    link.textContent = currentQRLink;
+    box.innerHTML = "";
+
+    if (typeof QRCode === "undefined") {
+      box.innerHTML = '<div style="color:#b91c1c;font-weight:700;">QR library ஏற்றப்படவில்லை. Internet connection சரிபார்க்கவும்.</div>';
+    } else {
+      new QRCode(box, {
+        text: currentQRLink,
+        width: 230,
+        height: 230,
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+
+    modal.style.display = "flex";
+  }
+
+  function closeFileQR() {
+    const modal = document.getElementById("qrModal");
+    if (modal) modal.style.display = "none";
+  }
+
+  function openCurrentQRLink() {
+    if (currentQRLink) window.open(currentQRLink, "_blank");
+  }
+
+  function downloadCurrentQR() {
+    const box = document.getElementById("qrCodeCanvas");
+    if (!box) return;
+
+    const canvas = box.querySelector("canvas");
+    const img = box.querySelector("img");
+
+    if (canvas) {
+      const a = document.createElement("a");
+      a.href = canvas.toDataURL("image/png");
+      a.download = "QR_File_Status.png";
+      a.click();
+    } else if (img && img.src) {
+      const a = document.createElement("a");
+      a.href = img.src;
+      a.download = "QR_File_Status.png";
+      a.click();
+    } else {
+      alert("QR படம் இன்னும் உருவாகவில்லை.");
+    }
+  }
+
+  window.addEventListener("click", function(e) {
+    const modal = document.getElementById("qrModal");
+    if (e.target === modal) closeFileQR();
+  });
+
+
+  /* ============================================================
+     QR STATUS PAGE
+     QR -> GitHub Pages -> Google Apps Script -> Files Sheet
+     ============================================================ */
+  function openQRStatusPage() {
+    const params = new URLSearchParams(window.location.search);
+    const officeNo = params.get("fileStatus");
+    if (!officeNo) return;
+
+    document.body.innerHTML = `
+      <div style="min-height:100vh;background:#f1f5f9;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;font-family:'Plus Jakarta Sans','Mukta Malar',Arial,sans-serif;">
+        <div id="qrLiveCard" style="width:100%;max-width:620px;background:#fff;border:1px solid #cbd5e1;border-radius:20px;padding:26px;box-shadow:0 18px 45px rgba(15,23,42,.12);">
+          <div style="text-align:center;font-size:1.25rem;font-weight:800;color:#0c4a6e;">🔳 கோப்பு QR நிலை</div>
+          <div style="text-align:center;margin-top:7px;color:#64748b;font-size:.86rem;">கோப்பு எண்: <b>${escapeHtmlQR(officeNo)}</b></div>
+          <div style="text-align:center;padding:35px 10px;color:#64748b;">☁️ Google Cloud தகவல் ஏற்றப்படுகிறது...</div>
+        </div>
+      </div>`;
+
+    const api = GOOGLE_SHEET_API_URL +
+      "?action=file_status&officeNo=" +
+      encodeURIComponent(officeNo);
+
+    fetch(api, { cache: "no-store" })
+      .then(r => r.json())
+      .then(data => {
+        const card = document.getElementById("qrLiveCard");
+        if (!card) return;
+
+        if (!data || data.status !== "success" || !data.file) {
+          card.innerHTML = `
+            <div style="text-align:center;font-size:1.25rem;font-weight:800;color:#b91c1c;">❌ கோப்பு கிடைக்கவில்லை</div>
+            <div style="text-align:center;margin-top:10px;color:#64748b;">கோப்பு எண்: <b>${escapeHtmlQR(officeNo)}</b></div>
+            <div style="text-align:center;margin-top:22px;"><button onclick="location.href='${github}'" style="border:0;border-radius:10px;padding:10px 16px;background:#0c4a6e;color:#fff;cursor:pointer;">முகப்புக்குச் செல்ல</button></div>`;
+          return;
+        }
+
+        const f = data.file;
+        const schoolName =
+          (typeof SCHOOL_NAMES !== "undefined" && SCHOOL_NAMES[f.schoolId])
+            ? SCHOOL_NAMES[f.schoolId]
+            : (f.schoolId || "-");
+
+        const status = f.status || "நிலை குறிப்பிடப்படவில்லை";
+
+        card.innerHTML = `
+          <div style="text-align:center;font-size:1.25rem;font-weight:800;color:#0c4a6e;">📂 கோப்பு தற்போதைய நிலை</div>
+          <div style="text-align:center;margin-top:7px;color:#64748b;font-size:.86rem;">நிகழ்நேர Google Cloud தகவல்</div>
+          <div style="margin-top:18px;display:grid;gap:10px;">
+            <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>கோப்பு எண்</b><br>${escapeHtmlQR(f.officeNo)}</div>
+            <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>அலுவலக தேதி</b><br>${escapeHtmlQR(f.officeDate)}</div>
+            <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>பள்ளி / அலுவலகம்</b><br>${escapeHtmlQR(schoolName)}</div>
+            <div style="padding:13px;border-radius:12px;background:#ecfdf5;border:1px solid #bbf7d0;color:#166534;"><b>🟢 தற்போதைய நிலை</b><br><span style="font-size:1.05rem;font-weight:800;">${escapeHtmlQR(status)}</span></div>
+            <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>தற்போது யாரிடம்</b><br>${escapeHtmlQR(f.currentWith)}</div>
+            <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>கோரிக்கை விவரம்</b><br>${escapeHtmlQR(f.subject)}</div>
+          </div>
+          <div style="margin-top:16px;text-align:center;font-size:.72rem;color:#94a3b8;">கடைசி புதுப்பிப்பு: ${escapeHtmlQR(f.updatedAt || "-")}</div>
+        `;
+      })
+      .catch(() => {
+        const card = document.getElementById("qrLiveCard");
+        if (card) card.innerHTML = `
+          <div style="text-align:center;font-size:1.2rem;font-weight:800;color:#b91c1c;">⚠️ Cloud தகவலைப் பெற முடியவில்லை</div>
+          <div style="text-align:center;margin-top:10px;color:#64748b;">Internet connection சரிபார்க்கவும்.</div>`;
+      });
+  }
+
+  function escapeHtmlQR(value) {
+    return String(value ?? "-").replace(/[&<>"']/g, function(ch) {
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", openQRStatusPage);
+
 </script>
 </body>
 </html>
