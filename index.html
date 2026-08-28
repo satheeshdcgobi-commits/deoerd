@@ -282,43 +282,25 @@
     }
   </style>
 
-<style id="file-list-horizontal-bundle-style">
-.file-action-buttons{
-  display:flex !important;
-  flex-direction:row !important;
-  flex-wrap:nowrap !important;
-  align-items:center !important;
-  justify-content:flex-start !important;
-  gap:4px !important;
-  white-space:nowrap !important;
-  min-width:max-content !important;
-}
-.file-action-buttons .btn{
-  flex:0 0 auto !important;
-  white-space:nowrap !important;
-  margin:0 !important;
-}
-.btn-bundle{background:#7c3aed !important;color:#fff !important}
+
+<style id="verified-file-actions-css">
+.file-action-buttons{display:flex !important;flex-direction:row !important;flex-wrap:nowrap !important;align-items:center !important;justify-content:flex-start !important;gap:4px !important;white-space:nowrap !important;min-width:max-content !important}
+.file-action-buttons .btn{display:inline-flex !important;align-items:center !important;justify-content:center !important;flex:0 0 auto !important;white-space:nowrap !important;margin:0 !important;padding:5px 7px !important;font-size:11px !important}
+.btn-bundle{background:#7c3aed !important;color:#fff !important;border-color:#6d28d9 !important}
 .btn-bundle:hover{background:#6d28d9 !important}
-#mainFilesTable th:last-child,#mainFilesTable td:last-child{min-width:560px}
-@media(max-width:1100px){
-  #mainFilesTable{display:block;overflow-x:auto}
-  #mainFilesTable th:last-child,#mainFilesTable td:last-child{min-width:560px}
-}
-.bundle-modal{position:fixed;inset:0;z-index:99999;background:rgba(8,25,40,.58);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:15px}
-.bundle-box{width:min(720px,96vw);max-height:88vh;overflow:auto;background:#fff;border-radius:18px;border:1px solid #d8e3ec;box-shadow:0 25px 70px rgba(8,47,73,.22);padding:20px}
-.bundle-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
-.bundle-head h3{margin:0;color:#082f49;font-size:1.08rem}.bundle-close{border:0;background:#eef4f8;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:18px}
+#mainFilesTable td:last-child,#mainFilesTable th:last-child{min-width:560px !important}
+@media(max-width:1100px){#mainFilesTable{display:block !important;overflow-x:auto !important}}
+</style>
+
+
+<style id="verified-bundle-css">
+.bundle-modal{position:fixed;inset:0;z-index:99999;background:rgba(8,25,40,.58);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:15px}
+.bundle-box{width:min(700px,96vw);max-height:88vh;overflow:auto;background:#fff;border:1px solid #d8e3ec;border-radius:18px;box-shadow:0 25px 70px rgba(8,47,73,.22);padding:20px}
+.bundle-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.bundle-head h3{margin:0;color:#082f49;font-size:1.08rem}.bundle-close{border:0;background:#eef4f8;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:18px}
 .bundle-current{background:#f1f7fb;border:1px solid #d8e6ef;border-radius:12px;padding:11px 13px;margin-bottom:10px}
-#bundleSearchInput{width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #cbd9e5;border-radius:9px;margin-bottom:10px}
-.bundle-list{display:flex;flex-direction:column;gap:7px;max-height:330px;overflow:auto}
-.bundle-item{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid #e1e9ef;border-radius:10px;padding:9px;background:#fff;cursor:pointer}
-.bundle-item:hover{background:#f8fbfd}.bundle-selected{background:#eff8ff;border-color:#9fc7e3}
-.bundle-item-main strong{display:block;font-size:.82rem}.bundle-item-main span{display:block;font-size:.72rem;color:#64748b;margin-top:2px}
-.bundle-chip{display:inline-block;margin:3px 4px 0 0;padding:4px 8px;border-radius:999px;background:#eef7fc;border:1px solid #cfe2ef;color:#0c4a6e;font-size:.7rem;font-weight:800}
-.bundle-empty{padding:20px;text-align:center;color:#64748b}.bundle-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
-.bundle-primary{background:#0c4a6e;color:#fff;border:0;border-radius:9px;padding:8px 12px;font-weight:800;cursor:pointer}
-.bundle-secondary{background:#f1f5f9;color:#334155;border:1px solid #d6e0e8;border-radius:9px;padding:8px 12px;font-weight:800;cursor:pointer}
+#bundleSearchInput{width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #cbd9e5;border-radius:9px;margin-bottom:10px}.bundle-list{display:flex;flex-direction:column;gap:7px;max-height:330px;overflow:auto}
+.bundle-item{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid #e1e9ef;border-radius:10px;padding:9px;background:#fff;cursor:pointer}.bundle-item:hover{background:#f8fbfd}.bundle-selected{background:#eff8ff;border-color:#9fc7e3}
+.bundle-item-main strong{display:block;font-size:.82rem}.bundle-item-main span{display:block;font-size:.72rem;color:#64748b;margin-top:2px}.bundle-chip{display:inline-block;margin:3px 4px 0 0;padding:4px 8px;border-radius:999px;background:#eef7fc;border:1px solid #cfe2ef;color:#0c4a6e;font-size:.7rem;font-weight:800}.bundle-empty{padding:20px;text-align:center;color:#64748b}.bundle-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.bundle-primary{background:#0c4a6e;color:#fff;border:0;border-radius:9px;padding:8px 12px;font-weight:800;cursor:pointer}.bundle-secondary{background:#f1f5f9;color:#334155;border:1px solid #d6e0e8;border-radius:9px;padding:8px 12px;font-weight:800;cursor:pointer}
 </style>
 
 </head>
@@ -1550,7 +1532,7 @@
               <button class="btn btn-sm" onclick="openStatusModal(decodeURIComponent('${safeOfficeNo}'))">நிலை</button>
               <button class="btn btn-sm btn-edit" onclick="openEditModal(decodeURIComponent('${safeOfficeNo}'))" title="விவரங்களை திருத்து">✏️ Edit</button>
               <button class="btn btn-sm btn-sticker" onclick="printDocketSticker(decodeURIComponent('${safeOfficeNo}'))" title="அட்டை ஸ்டிக்கர்">🏷️ ஸ்டிக்கர்</button>
-               <button class="btn btn-sm btn-bundle" onclick="openDigitalBundle(decodeURIComponent('${safeOfficeNo}'))" title="தொடர்புடைய கோப்புகளை Bundle செய்ய">📦 Bundle</button>
+               <button class="btn btn-sm btn-bundle" onclick="openDigitalBundle(decodeURIComponent('${safeOfficeNo}'))" title="தொடர்புடைய கோப்புகளை இணைக்க">📦 Bundle</button>
               ${file.status === 'முடிவுற்றது' ? `<button class="btn btn-sm btn-archive" onclick="archiveSingleFile(decodeURIComponent('${safeOfficeNo}'))" title="காப்பகத்திற்கு மாற்று">📦 Archive</button>` : ''}
               <button class="btn btn-sm btn-danger" onclick="deleteFile(decodeURIComponent('${safeOfficeNo}'))" title="கோப்பினை நீக்கு">🗑️ நீக்கு</button>
             ` : ''}
@@ -2721,6 +2703,10 @@
 </script>
 
 
+</div>
+
+
+
 <div id="digitalBundleModal" class="bundle-modal" aria-hidden="true">
   <div class="bundle-box">
     <div class="bundle-head"><h3>📦 Digital Bundle</h3><button type="button" class="bundle-close" onclick="closeDigitalBundle()">×</button></div>
@@ -2728,58 +2714,91 @@
     <input id="bundleSearchInput" type="search" placeholder="🔎 கோப்பு எண் / பள்ளி பெயர் தேடுக..." oninput="renderBundleCandidates()">
     <div id="bundleCandidateList" class="bundle-list"></div>
     <div id="bundleSelectedInfo" style="margin-top:10px"></div>
-    <div class="bundle-actions">
-      <button type="button" class="bundle-primary" onclick="saveDigitalBundle()">🔗 Bundle-ல் இணைக்கவும்</button>
-      <button type="button" class="bundle-secondary" onclick="closeDigitalBundle()">மூடு</button>
-    </div>
+    <div class="bundle-actions"><button type="button" class="bundle-primary" onclick="saveDigitalBundle()">🔗 Bundle-ல் இணைக்கவும்</button><button type="button" class="bundle-secondary" onclick="closeDigitalBundle()">மூடு</button></div>
   </div>
 </div>
 
 
-<script id="digital-bundle-module">
+<script id="verified-digital-bundle">
 (function(){
-const KEY='digital_file_bundles_v1';let currentNo='',selected=new Set();
-function readStore(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}}
-function writeStore(v){localStorage.setItem(KEY,JSON.stringify(v))}
-function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-window.openDigitalBundle=function(no){
- currentNo=String(no||'').trim();if(!currentNo)return;
- const s=readStore();selected=new Set(s[currentNo.toLowerCase()]||[]);
- let f=null;try{if(typeof getFileSafely==='function')f=getFileSafely(currentNo)}catch(e){}
- const c=document.getElementById('bundleCurrentFile');
- if(c)c.innerHTML='<strong>📂 முதன்மை கோப்பு:</strong> '+esc((f&&f.officeNo)||currentNo)+(f&&f.subject?'<br><span style="font-size:.75rem;color:#64748b">'+esc(f.subject)+'</span>':'');
- const m=document.getElementById('digitalBundleModal');if(m)m.style.display='flex';
- const q=document.getElementById('bundleSearchInput');if(q){q.value='';setTimeout(()=>q.focus(),50)}
- renderBundleCandidates();renderBundleSelection();
-};
-window.closeDigitalBundle=function(){const m=document.getElementById('digitalBundleModal');if(m)m.style.display='none';currentNo='';selected=new Set()};
-window.renderBundleCandidates=function(){
- const box=document.getElementById('bundleCandidateList');if(!box)return;
- let files=[];try{if(typeof memoryFiles!=='undefined'&&Array.isArray(memoryFiles))files=memoryFiles.slice()}catch(e){}
- const q=String((document.getElementById('bundleSearchInput')||{}).value||'').trim().toLowerCase();
- files=files.filter(f=>String(f.officeNo||'').trim().toLowerCase()!==currentNo.toLowerCase());
- if(q)files=files.filter(f=>[f.officeNo,f.schoolId,f.schoolName,f.subject,f.prevRefNo].some(v=>String(v||'').toLowerCase().includes(q)));
- if(!files.length){box.innerHTML='<div class="bundle-empty">தொடர்புடைய கோப்புகள் இல்லை.</div>';return}
- box.innerHTML=files.slice(0,100).map(f=>{
-   const no=String(f.officeNo||''),on=selected.has(no);
-   return '<div class="bundle-item '+(on?'bundle-selected':'')+'" onclick="toggleBundleFile('+JSON.stringify(no)+')"><div class="bundle-item-main"><strong>📄 '+esc(no)+'</strong><span>'+esc(f.schoolName||f.schoolId||'')+(f.subject?' • '+esc(f.subject):'')+'</span></div><span>'+(on?'☑️':'⬜')+'</span></div>'
- }).join('');
-};
-window.toggleBundleFile=function(no){no=String(no);if(selected.has(no))selected.delete(no);else selected.add(no);renderBundleCandidates();renderBundleSelection()};
-window.renderBundleSelection=function(){
- const el=document.getElementById('bundleSelectedInfo');if(!el)return;
- const a=Array.from(selected);
- el.innerHTML=a.length?'<strong style="font-size:.76rem">இணைக்க தேர்வு:</strong><br>'+a.map(n=>'<span class="bundle-chip">📄 '+esc(n)+'</span>').join(''):'<span style="font-size:.74rem;color:#64748b">தொடர்புடைய கோப்புகளை தேர்வு செய்யவும்.</span>';
-};
-window.saveDigitalBundle=function(){
- if(!currentNo)return;const s=readStore(),k=currentNo.toLowerCase(),old=Array.isArray(s[k])?s[k]:[];
- s[k]=Array.from(new Set(old.concat(Array.from(selected)))).filter(n=>String(n).toLowerCase()!==k);
- writeStore(s);alert('📦 Digital Bundle சேமிக்கப்பட்டது.');closeDigitalBundle();
-};
-window.getDigitalBundle=function(no){return readStore()[String(no||'').trim().toLowerCase()]||[]};
-window.removeFromDigitalBundle=function(no,rel){const s=readStore(),k=String(no||'').trim().toLowerCase();s[k]=(s[k]||[]).filter(x=>String(x).toLowerCase()!==String(rel).toLowerCase());writeStore(s)};
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDigitalBundle()});
-document.addEventListener('click',e=>{const m=document.getElementById('digitalBundleModal');if(m&&e.target===m)closeDigitalBundle()});
+  const KEY='digital_file_bundles_v1';
+  let currentNo='';
+  let selected=new Set();
+
+  function readStore(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
+  function writeStore(v){localStorage.setItem(KEY,JSON.stringify(v))}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+
+  window.openDigitalBundle=function(officeNo){
+    currentNo=String(officeNo||'').trim();
+    if(!currentNo)return;
+    const s=readStore();
+    selected=new Set(s[currentNo.toLowerCase()]||[]);
+    let file=null;
+    try{if(typeof getFileSafely==='function')file=getFileSafely(currentNo)}catch(e){}
+    const c=document.getElementById('bundleCurrentFile');
+    if(c)c.innerHTML='<strong>📂 முதன்மை கோப்பு:</strong> '+esc((file&&file.officeNo)||currentNo)+(file&&file.subject?'<br><span style="font-size:.75rem;color:#64748b">'+esc(file.subject)+'</span>':'');
+    const m=document.getElementById('digitalBundleModal');
+    if(m)m.style.display='flex';
+    const q=document.getElementById('bundleSearchInput');
+    if(q){q.value='';setTimeout(function(){q.focus()},50)}
+    renderBundleCandidates();renderBundleSelection();
+  };
+
+  window.closeDigitalBundle=function(){
+    const m=document.getElementById('digitalBundleModal');
+    if(m)m.style.display='none';
+    currentNo='';selected=new Set();
+  };
+
+  window.renderBundleCandidates=function(){
+    const box=document.getElementById('bundleCandidateList');
+    if(!box)return;
+    let files=[];
+    try{if(typeof memoryFiles!=='undefined'&&Array.isArray(memoryFiles))files=memoryFiles.slice()}catch(e){}
+    const input=document.getElementById('bundleSearchInput');
+    const q=String(input&&input.value||'').trim().toLowerCase();
+    files=files.filter(function(f){return String(f.officeNo||'').trim().toLowerCase()!==currentNo.toLowerCase()});
+    if(q)files=files.filter(function(f){return [f.officeNo,f.schoolId,f.schoolName,f.subject,f.prevRefNo].some(function(v){return String(v||'').toLowerCase().includes(q)})});
+    if(!files.length){box.innerHTML='<div class="bundle-empty">தொடர்புடைய கோப்புகள் இல்லை.</div>';return}
+    box.innerHTML=files.slice(0,100).map(function(f){
+      const no=String(f.officeNo||''),checked=selected.has(no);
+      return '<div class="bundle-item '+(checked?'bundle-selected':'')+'" onclick="toggleBundleFile('+JSON.stringify(no)+')"><div class="bundle-item-main"><strong>📄 '+esc(no)+'</strong><span>'+esc(f.schoolName||f.schoolId||'')+(f.subject?' • '+esc(f.subject):'')+'</span></div><span>'+(checked?'☑️':'⬜')+'</span></div>';
+    }).join('');
+  };
+
+  window.toggleBundleFile=function(no){
+    no=String(no);
+    if(selected.has(no))selected.delete(no);else selected.add(no);
+    renderBundleCandidates();renderBundleSelection();
+  };
+
+  window.renderBundleSelection=function(){
+    const el=document.getElementById('bundleSelectedInfo');
+    if(!el)return;
+    const list=Array.from(selected);
+    el.innerHTML=list.length?'<strong style="font-size:.76rem">இணைக்க தேர்வு:</strong><br>'+list.map(function(n){return '<span class="bundle-chip">📄 '+esc(n)+'</span>'}).join(''):'<span style="font-size:.74rem;color:#64748b">தொடர்புடைய கோப்புகளை தேர்வு செய்யவும்.</span>';
+  };
+
+  window.saveDigitalBundle=function(){
+    if(!currentNo)return;
+    const s=readStore(),key=currentNo.toLowerCase(),old=Array.isArray(s[key])?s[key]:[];
+    s[key]=Array.from(new Set(old.concat(Array.from(selected)))).filter(function(n){return String(n).toLowerCase()!==key});
+    writeStore(s);
+    alert('📦 Digital Bundle சேமிக்கப்பட்டது.');
+    closeDigitalBundle();
+  };
+
+  window.getDigitalBundle=function(no){return readStore()[String(no||'').trim().toLowerCase()]||[]};
+
+  window.removeFromDigitalBundle=function(no,relatedNo){
+    const s=readStore(),key=String(no||'').trim().toLowerCase();
+    s[key]=(s[key]||[]).filter(function(x){return String(x).toLowerCase()!==String(relatedNo).toLowerCase()});
+    writeStore(s);
+  };
+
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDigitalBundle()});
+  document.addEventListener('click',function(e){const m=document.getElementById('digitalBundleModal');if(m&&e.target===m)closeDigitalBundle()});
 })();
 </script>
 
