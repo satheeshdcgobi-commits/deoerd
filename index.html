@@ -420,8 +420,16 @@
           <span class="toolIcon">📢</span><span>School Circular</span>
         </button>
       </div>
-      <div id="waToolSection" class="adminToolSection compactToolSection" style="display:none;border-top:1px solid var(--border);padding-top:10px;margin-bottom:10px;"><h4 style="color:#16a34a;">📲 WA Broadcast</h4><textarea id="waBroadcastMessage" rows="2" placeholder="தேர்வு செய்யப்பட்ட பள்ளிகளுக்கு அனுப்ப வேண்டிய WhatsApp செய்தியை உள்ளிடவும்..."></textarea><div id="waBroadcastContacts" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px;margin:8px 0;"></div><div><button class="btn btn-ja btn-sm" onclick="selectAllBroadcastContacts()">☑️ அனைத்தையும் தேர்வு</button> <button class="btn btn-secondary btn-sm" onclick="clearBroadcastContacts()">✕ ரத்து</button> <button class="btn btn-success btn-sm" onclick="openWABroadcast()">📲 WA Broadcast திறக்க</button></div></div>
-      
+      <div id="waToolSection" class="adminToolSection compactToolSection" style="display:none;border-top:1px solid var(--border);padding-top:10px;margin-bottom:10px;">
+        <h4 style="color:#16a34a;">📲 WA Broadcast</h4>
+        <textarea id="waBroadcastMessage" rows="2" placeholder="WhatsApp குழுவில் பகிர வேண்டிய செய்தியை இங்கே எழுதவும்..."></textarea>
+        <div style="margin-top:7px;">
+          <button class="btn btn-secondary btn-sm" onclick="copyWABroadcastMessage()">📋 Copy</button>
+          <button class="btn btn-success btn-sm" onclick="openWABroadcast()">🌐 WhatsApp Web</button>
+        </div>
+        <small style="display:block;color:#64748b;margin-top:5px;">WhatsApp Web திறந்ததும் நீங்கள் விரும்பும் Group-ஐ தேர்வு செய்து செய்தியை Paste செய்து அனுப்பலாம்.</small>
+      </div>
+
       <div id="circularToolSection" class="adminToolSection compactToolSection" style="display:none;border-top:1px solid var(--border);padding-top:10px;">
         <h4 style="color: #0f172a; font-size: .9rem; margin-bottom: 7px;">📢 School Circular</h4>
         <div style="display: grid; gap: 10px;">
@@ -1204,7 +1212,6 @@
 
     if (isAdmin) {
       populateAdminSchoolDropdown();
-      renderBroadcastContacts();
     } else {
       loadSchoolStickyCircular(currentUser);
     }
@@ -1226,10 +1233,35 @@
     checkSchoolUrgentAlerts();
   }
 
-  function renderBroadcastContacts(){const box=document.getElementById('waBroadcastContacts');if(!box)return;const c=getContacts();box.innerHTML=Object.keys(SCHOOL_NAMES).map(id=>{const x=c[id]||{},n=x.jaPhone||x.hmPhone||'';return `<label style="display:flex;gap:7px;padding:7px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;"><input type="checkbox" class="wa-broadcast-contact" data-phone="${n}"><span><b>${SCHOOL_NAMES[id]}</b><br><small>${n||'WhatsApp எண் பதிவு செய்யப்படவில்லை'}</small></span></label>`}).join('')}
-function selectAllBroadcastContacts(){renderBroadcastContacts();document.querySelectorAll('.wa-broadcast-contact').forEach(x=>x.checked=true)}
-function clearBroadcastContacts(){document.querySelectorAll('.wa-broadcast-contact').forEach(x=>x.checked=false)}
-function openWABroadcast(){const m=(document.getElementById('waBroadcastMessage')||{}).value||'';if(!m.trim()){alert('Broadcast செய்தியை உள்ளிடவும்!');return}const a=Array.from(document.querySelectorAll('.wa-broadcast-contact:checked'));if(!a.length){alert('குறைந்தது ஒரு பள்ளியைத் தேர்வு செய்யவும்!');return}a.forEach((x,i)=>setTimeout(()=>window.open(`https://wa.me/${x.dataset.phone}?text=${encodeURIComponent(m)}`,'_blank'),i*700))}
+  function copyWABroadcastMessage(){
+  const el=document.getElementById('waBroadcastMessage');
+  const m=el ? el.value.trim() : '';
+  if(!m){ alert('முதலில் WhatsApp செய்தியை உள்ளிடவும்!'); return; }
+  const done=()=>alert('செய்தி Copy செய்யப்பட்டது. WhatsApp Web-ல் உங்கள் Group-ல் Paste செய்யலாம்.');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(m).then(done).catch(()=>fallbackCopyWA_(m));
+  }else{
+    fallbackCopyWA_(m);
+  }
+}
+function fallbackCopyWA_(m){
+  const ta=document.createElement('textarea');
+  ta.value=m;
+  ta.style.position='fixed';
+  ta.style.opacity='0';
+  document.body.appendChild(ta);
+  ta.select();
+  try{ document.execCommand('copy'); alert('செய்தி Copy செய்யப்பட்டது. WhatsApp Web-ல் உங்கள் Group-ல் Paste செய்யலாம்.'); }
+  catch(e){ alert('Copy செய்ய முடியவில்லை. செய்தியை கைமுறையாக Copy செய்யவும்.'); }
+  ta.remove();
+}
+function openWABroadcast(){
+  const el=document.getElementById('waBroadcastMessage');
+  const m=el ? el.value.trim() : '';
+  if(!m){ alert('முதலில் WhatsApp செய்தியை உள்ளிடவும்!'); return; }
+  copyWABroadcastMessage();
+  window.open('https://web.whatsapp.com/','_blank','noopener');
+}
 
 function populateAdminSchoolDropdown() {
     const selectEl = document.getElementById('adminCircularSchoolSelect');
@@ -1501,7 +1533,6 @@ function populateAdminSchoolDropdown() {
               <button class="btn btn-sm" onclick="openStatusModal(decodeURIComponent('${safeOfficeNo}'))">நிலை</button>
               <button class="btn btn-sm btn-edit" onclick="openEditModal(decodeURIComponent('${safeOfficeNo}'))" title="விவரங்களை திருத்து">✏️ Edit</button>
               <button class="btn btn-sm btn-warning" onclick="openStickerOptions(decodeURIComponent('${safeOfficeNo}'))" title="Sticker">🏷️ Sticker</button>
-              <button class="btn btn-sm btn-qr" onclick="openFileQR(decodeURIComponent('${safeOfficeNo}'))" title="QR Code">🔳 QR</button>
               ${file.status === 'முடிவுற்றது' ? `<button class="btn btn-sm btn-archive" onclick="archiveSingleFile(decodeURIComponent('${safeOfficeNo}'))" title="காப்பகத்திற்கு மாற்று">📦 Archive</button>` : ''}
               <button class="btn btn-sm btn-danger" onclick="deleteFile(decodeURIComponent('${safeOfficeNo}'))" title="கோப்பினை நீக்கு">🗑️ நீக்கு</button>
             ` : ''}
@@ -2695,10 +2726,6 @@ function populateAdminSchoolDropdown() {
   border-radius:10px;
   background:#fff;
 }
-#waBroadcastContacts{
-  grid-template-columns:repeat(auto-fit,minmax(105px,1fr)) !important;
-  gap:5px !important;
-}
 #waBroadcastMessage,#adminCircularMsgInput{
   height:38px !important;
   min-height:38px !important;
@@ -2758,99 +2785,7 @@ function toggleAdminTool(id){
   el.style.display=show?'block':'none';
 }
 
-  /* ============================================================
-     QR CODE - LIVE FILE STATUS
-     ============================================================ */
-  let currentQRLink = "";
-
-  function openFileQR(officeNo) {
-    try {
-      const file = getFileSafely(officeNo);
-
-      if (!file) {
-        alert("கோப்பு தகவல் கிடைக்கவில்லை.");
-        return;
-      }
-
-      const githubBase = "https://satheeshdcgobi-commits.github.io/deoerd/";
-      currentQRLink =
-        githubBase + "?fileStatus=" +
-        encodeURIComponent(String(officeNo));
-
-      const modal = document.getElementById("qrModal");
-      const box = document.getElementById("qrCodeCanvas");
-      const title = document.getElementById("qrFileTitle");
-      const link = document.getElementById("qrStatusLink");
-
-      if (!modal || !box || !title || !link) {
-        alert("QR பகுதி page-ல் ஏற்றப்படவில்லை. index.html-ஐ refresh செய்து மீண்டும் முயற்சிக்கவும்.");
-        return;
-      }
-
-      title.textContent = "கோப்பு எண்: " + officeNo;
-      link.textContent = currentQRLink;
-      box.innerHTML = "";
-
-      if (typeof QRCode === "undefined") {
-        box.innerHTML =
-          '<div style="color:#b91c1c;font-weight:700;text-align:center;">' +
-          'QR library ஏற்றப்படவில்லை. Internet connection சரிபார்க்கவும்.' +
-          '</div>';
-      } else {
-        new QRCode(box, {
-          text: currentQRLink,
-          width: 230,
-          height: 230,
-          correctLevel: QRCode.CorrectLevel.M
-        });
-      }
-
-      modal.style.display = "flex";
-
-    } catch (err) {
-      console.error("QR Error:", err);
-      alert("QR Code திறக்க முடியவில்லை. Page-ஐ refresh செய்து மீண்டும் முயற்சிக்கவும்.");
-    }
-  }
-
-  function closeFileQR() {
-    const modal = document.getElementById("qrModal");
-    if (modal) modal.style.display = "none";
-  }
-
-  function openCurrentQRLink() {
-    if (currentQRLink) window.open(currentQRLink, "_blank");
-  }
-
-  function downloadCurrentQR() {
-    const box = document.getElementById("qrCodeCanvas");
-    if (!box) return;
-
-    const canvas = box.querySelector("canvas");
-    const img = box.querySelector("img");
-
-    if (canvas) {
-      const a = document.createElement("a");
-      a.href = canvas.toDataURL("image/png");
-      a.download = "QR_File_Status.png";
-      a.click();
-    } else if (img && img.src) {
-      const a = document.createElement("a");
-      a.href = img.src;
-      a.download = "QR_File_Status.png";
-      a.click();
-    } else {
-      alert("QR படம் இன்னும் உருவாகவில்லை.");
-    }
-  }
-
-  window.addEventListener("click", function(e) {
-    const modal = document.getElementById("qrModal");
-    if (e.target === modal) closeFileQR();
-  });
-
-
-  /* ============================================================
+    /* ============================================================
      QR STATUS PAGE
      QR -> GitHub Pages -> Google Apps Script -> Files Sheet
      ============================================================ */
@@ -2922,7 +2857,12 @@ function toggleAdminTool(id){
     });
   }
 
-  document.addEventListener("DOMContentLoaded", openQRStatusPage);
+  document.addEventListener("DOMContentLoaded", function () {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("fileStatus") && params.get("fileStatus")) {
+      openQRStatusPage();
+    }
+  });
 
 
 /* ============================================================
@@ -3049,27 +2989,6 @@ function printFileSticker(){
 }
 
 </script>
-
-<!-- 🔳 QR Code Modal - REAL DOM -->
-<div id="qrModal" class="modal" style="display:none;">
-  <div class="modal-content qr-modal-box">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0;color:#111827;">🔳 கோப்பு QR Code</h3>
-      <button class="btn btn-sm btn-danger" onclick="closeFileQR()">மூடு ✕</button>
-    </div>
-    <div id="qrFileTitle" style="margin-top:10px;font-weight:800;color:#0c4a6e;"></div>
-    <div id="qrCodeCanvas" style="display:flex;justify-content:center;align-items:center;min-height:240px;"></div>
-    <div id="qrStatusHint" style="font-size:.84rem;color:#475569;margin:10px 0;">
-      QR-ஐ scan செய்தவுடன் கோப்பின் தற்போதைய நிலை திறக்கும்.
-    </div>
-    <div id="qrStatusLink" class="qr-status-link" style="word-break:break-all;font-size:.72rem;"></div>
-    <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
-      <button class="btn btn-secondary btn-sm" onclick="downloadCurrentQR()">⬇️ QR படம்</button>
-      <button class="btn btn-sm" onclick="openCurrentQRLink()">🌐 Status திற</button>
-    </div>
-  </div>
-</div>
-
 
 <!-- 🏷️ Sticker Options -->
 <div id="stickerOptionsModal" class="modal" style="display:none;">
