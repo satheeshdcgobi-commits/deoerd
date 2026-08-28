@@ -422,19 +422,15 @@
       </div>
       <div id="waToolSection" class="adminToolSection compactToolSection" style="display:none;border-top:1px solid var(--border);padding-top:10px;margin-bottom:10px;">
         <h4 style="color:#16a34a;">📲 WA Broadcast</h4>
-        <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;">
-          <div>
-            <textarea id="waBroadcastMessage" rows="2" placeholder="WhatsApp குழுவில் பகிர வேண்டிய செய்தியை இங்கே எழுதவும்..."></textarea>
-            <small style="display:block;color:#64748b;margin-top:4px;">💡 தனிப்பட்ட பள்ளி எண்களுக்கு அனுப்பாமல், WhatsApp Web-ஐ திறந்து நீங்கள் விரும்பும் Group-ல் நேரடியாக பகிரலாம்.</small>
-          </div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button class="btn btn-secondary btn-sm" onclick="copyWABroadcastMessage()">📋 Copy</button>
-            <button class="btn btn-success btn-sm" onclick="openWABroadcast()">🌐 WhatsApp Web</button>
-          </div>
+        <textarea id="waBroadcastMessage" rows="2" placeholder="WhatsApp குழுவில் பகிர வேண்டிய செய்தியை இங்கே எழுதவும்..."></textarea>
+        <div style="margin-top:7px;">
+          <button class="btn btn-secondary btn-sm" onclick="copyWABroadcastMessage()">📋 Copy</button>
+          <button class="btn btn-success btn-sm" onclick="openWABroadcast()">🌐 WhatsApp Web</button>
         </div>
+        <small style="display:block;color:#64748b;margin-top:5px;">WhatsApp Web திறந்ததும் நீங்கள் விரும்பும் Group-ஐ தேர்வு செய்து செய்தியை Paste செய்து அனுப்பலாம்.</small>
       </div>
 
-      $1 class="adminToolSection compactToolSection" style="display:none;border-top:1px solid var(--border);padding-top:10px;">
+      <div id="circularToolSection" class="adminToolSection compactToolSection" style="display:none;border-top:1px solid var(--border);padding-top:10px;">
         <h4 style="color: #0f172a; font-size: .9rem; margin-bottom: 7px;">📢 School Circular</h4>
         <div style="display: grid; gap: 10px;">
           <div>
@@ -532,14 +528,6 @@
         <h3 id="statThisMonth" style="color: #0284c7;">0</h3>
         <p>📅 இந்த மாத மனுக்கள்</p>
       </div>
-
-    <!-- பள்ளி வாரியான கோப்பு நிலவரம் -->
-    <div id="schoolFileSummaryCard" class="card admin-only-summary" style="display:none; margin-top:12px; border-left:4px solid #0ea5e9;">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
-        <h3 style="margin:0;color:#0c4a6e;font-size:1rem;">🏫 பள்ளி வாரியான கோப்பு நிலவரம்</h3>
-        <small style="color:#64748b;">உங்கள் index.html-ல் உள்ள பள்ளி பெயர்களே பயன்படுத்தப்படுகின்றன.</small>
-      </div>
-      <div id="schoolFileSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;margin-top:10px;"></div>
     </div>
 
     <!-- பள்ளி பயனர் தேடல் பெட்டி -->
@@ -868,9 +856,6 @@
     <div class="form-group">
       <label>குறிப்பு (Remarks):</label>
       <textarea id="modalRemark" rows="2" placeholder="குறிப்புகளை உள்ளிடவும்..."></textarea>
-    </div>
-    <div id="movementTimeline">
-      <div style="color:#64748b;font-size:.78rem;">நகர்வு வரலாறு ஏற்றப்படுகிறது...</div>
     </div>
     <div style="display:flex; gap:10px; margin-top:15px;">
       <button onclick="saveStatusUpdate()" id="updateStatusBtn" class="btn" style="flex:1;">புதுப்பி (Update)</button>
@@ -1227,7 +1212,6 @@
 
     if (isAdmin) {
       populateAdminSchoolDropdown();
-      renderBroadcastContacts();
     } else {
       loadSchoolStickyCircular(currentUser);
     }
@@ -1253,25 +1237,28 @@
   const el=document.getElementById('waBroadcastMessage');
   const m=el ? el.value.trim() : '';
   if(!m){ alert('முதலில் WhatsApp செய்தியை உள்ளிடவும்!'); return; }
+  const done=()=>alert('செய்தி Copy செய்யப்பட்டது. WhatsApp Web-ல் உங்கள் Group-ல் Paste செய்யலாம்.');
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(m).then(
-      ()=>alert('WhatsApp செய்தி Copy செய்யப்பட்டது. WhatsApp Web-ல் உங்கள் Group-ல் Paste செய்யலாம்.'),
-      ()=>fallbackCopyWA_(m)
-    );
+    navigator.clipboard.writeText(m).then(done).catch(()=>fallbackCopyWA_(m));
   }else{
     fallbackCopyWA_(m);
   }
 }
 function fallbackCopyWA_(m){
   const ta=document.createElement('textarea');
-  ta.value=m; document.body.appendChild(ta); ta.select();
-  try{document.execCommand('copy'); alert('WhatsApp செய்தி Copy செய்யப்பட்டது.');}
-  catch(e){alert('Copy செய்ய முடியவில்லை. செய்தியை கைமுறையாக Copy செய்யவும்.');}
+  ta.value=m;
+  ta.style.position='fixed';
+  ta.style.opacity='0';
+  document.body.appendChild(ta);
+  ta.select();
+  try{ document.execCommand('copy'); alert('செய்தி Copy செய்யப்பட்டது. WhatsApp Web-ல் உங்கள் Group-ல் Paste செய்யலாம்.'); }
+  catch(e){ alert('Copy செய்ய முடியவில்லை. செய்தியை கைமுறையாக Copy செய்யவும்.'); }
   ta.remove();
 }
 function openWABroadcast(){
-  const m=(document.getElementById('waBroadcastMessage')||{}).value||'';
-  if(!m.trim()){alert('முதலில் WhatsApp செய்தியை உள்ளிடவும்!');return;}
+  const el=document.getElementById('waBroadcastMessage');
+  const m=el ? el.value.trim() : '';
+  if(!m){ alert('முதலில் WhatsApp செய்தியை உள்ளிடவும்!'); return; }
   copyWABroadcastMessage();
   window.open('https://web.whatsapp.com/','_blank','noopener');
 }
@@ -1425,81 +1412,6 @@ function populateAdminSchoolDropdown() {
     return Math.floor(diffTime / (1000 * 60 * 60 * 24));
   }
 
-  function renderSchoolFileSummary_(files, isAdmin){
-    const card=document.getElementById('schoolFileSummaryCard');
-    const box=document.getElementById('schoolFileSummary');
-    if(!card || !box) return;
-    if(!isAdmin){
-      card.style.display='none';
-      return;
-    }
-    card.style.display='block';
-
-    const ids=Object.keys(SCHOOL_NAMES).filter(id=>id!=='SCH_OTHERS');
-    const items=ids.map(id=>{
-      const list=files.filter(f=>f.schoolId===id);
-      const pending=list.filter(f=>!['முடிவுற்றது','நிராகரிக்கப்பட்டது'].includes(f.status)).length;
-      const completed=list.filter(f=>['முடிவுற்றது','நிராகரிக்கப்பட்டது'].includes(f.status)).length;
-      const overdue=list.filter(f=>{
-        if(['முடிவுற்றது','நிராகரிக்கப்பட்டது'].includes(f.status)) return false;
-        return calculateDaysPending(f.officeDate) > (parseInt(f.slaDays)||15);
-      }).length;
-      return `<div class="school-summary-item">
-        <div class="school-summary-name">${escapeHtmlSafe_(SCHOOL_NAMES[id])}</div>
-        <div class="school-summary-counts">
-          <span>மொத்தம் <b>${list.length}</b></span>
-          <span>நிலுவை <b>${pending}</b></span>
-          <span>முடிவு <b>${completed}</b></span>
-          <span>தாமதம் <b>${overdue}</b></span>
-        </div>
-      </div>`;
-    }).join('');
-
-    const otherFiles=files.filter(f=>f.schoolId==='SCH_OTHERS');
-    const otherPending=otherFiles.filter(f=>!['முடிவுற்றது','நிராகரிக்கப்பட்டது'].includes(f.status)).length;
-    const otherCompleted=otherFiles.length-otherPending;
-    const otherOverdue=otherFiles.filter(f=>{
-      if(['முடிவுற்றது','நிராகரிக்கப்பட்டது'].includes(f.status)) return false;
-      return calculateDaysPending(f.officeDate) > (parseInt(f.slaDays)||15);
-    }).length;
-
-    box.innerHTML=items + `<div class="school-summary-item">
-      <div class="school-summary-name">${escapeHtmlSafe_(SCHOOL_NAMES.SCH_OTHERS)}</div>
-      <div class="school-summary-counts">
-        <span>மொத்தம் <b>${otherFiles.length}</b></span>
-        <span>நிலுவை <b>${otherPending}</b></span>
-        <span>முடிவு <b>${otherCompleted}</b></span>
-        <span>தாமதம் <b>${otherOverdue}</b></span>
-      </div>
-    </div>`;
-  }
-
-  function escapeHtmlSafe_(value){
-    return String(value ?? '').replace(/[&<>"']/g,function(ch){
-      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];
-    });
-  }
-
-  function renderMovementTimeline_(file){
-    const box=document.getElementById('movementTimeline');
-    if(!box) return;
-    const history=Array.isArray(file.history)?file.history:[];
-    if(!history.length){
-      box.innerHTML='<div style="color:#64748b;font-size:.78rem;">இதுவரை நகர்வு வரலாறு பதிவு செய்யப்படவில்லை.</div>';
-      return;
-    }
-    box.innerHTML=history.slice().reverse().map(h=>{
-      const stage=h.stage || `${h.officer||''} (${file.status||''})`;
-      return `<div class="movement-item">
-        <div class="movement-date">${escapeHtmlSafe_(h.date||'-')}</div>
-        <div>
-          <div class="movement-stage">${escapeHtmlSafe_(stage)}</div>
-          ${h.remark?`<div class="movement-remark">📝 ${escapeHtmlSafe_(h.remark)}</div>`:''}
-        </div>
-      </div>`;
-    }).join('');
-  }
-
   function renderDashboard() {
     const allFiles = memoryFiles;
     const isAdmin = currentUser === 'ADMIN';
@@ -1532,7 +1444,6 @@ function populateAdminSchoolDropdown() {
     document.getElementById('statUrgent').innerText = urgentCount;
     document.getElementById('statOverdue').innerText = overdueCount;
     document.getElementById('statThisMonth').innerText = thisMonthCount;
-    renderSchoolFileSummary_(accessibleFiles, isAdmin);
 
     let displayFiles = accessibleFiles;
     if (currentFilter === 'PENDING') displayFiles = accessibleFiles.filter(f => f.status !== 'முடிவுற்றது' && f.status !== 'நிராகரிக்கப்பட்டது');
@@ -1835,7 +1746,6 @@ function populateAdminSchoolDropdown() {
     handleOfficerSelection(file.currentWith || "பிரிவு எழுத்தர் (Section Assistant)");
     document.getElementById('modalStatus').value = file.status;
     handleStatusSelection(file.status);
-    renderMovementTimeline_(file);
 
     document.getElementById('statusModal').style.display = 'flex';
   }
@@ -2440,21 +2350,6 @@ function populateAdminSchoolDropdown() {
 }
 
 
-
-#waBroadcastContacts{display:none !important;}
-#schoolFileSummaryCard .school-summary-item{
-  border:1px solid #dbeafe;background:#f8fafc;border-radius:10px;padding:9px 10px;
-}
-#schoolFileSummaryCard .school-summary-name{font-size:.78rem;font-weight:800;color:#0f172a;line-height:1.25;}
-#schoolFileSummaryCard .school-summary-counts{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;font-size:.68rem;}
-#schoolFileSummaryCard .school-summary-counts span{padding:3px 6px;border-radius:999px;background:#fff;border:1px solid #e2e8f0;}
-#movementTimeline{margin-top:10px;padding:10px;border:1px solid #dbeafe;background:#f8fafc;border-radius:10px;}
-.movement-item{display:grid;grid-template-columns:86px 1fr;gap:8px;padding:7px 0;border-bottom:1px dashed #cbd5e1;font-size:.76rem;}
-.movement-item:last-child{border-bottom:0;}
-.movement-date{color:#64748b;font-weight:700;}
-.movement-stage{color:#0f172a;font-weight:700;}
-.movement-remark{color:#475569;font-weight:500;margin-top:2px;}
-
 /* ===== Final JA / HM WhatsApp Contact Registration ===== */
 #contactsSettingsBtn{background:#16a34a !important;border-color:#15803d !important;color:#fff !important;font-weight:700 !important;}
 #contactsSettingsBtn:hover{background:#15803d !important;transform:translateY(-1px);}
@@ -2831,10 +2726,6 @@ function populateAdminSchoolDropdown() {
   border-radius:10px;
   background:#fff;
 }
-#waBroadcastContacts{
-  grid-template-columns:repeat(auto-fit,minmax(105px,1fr)) !important;
-  gap:5px !important;
-}
 #waBroadcastMessage,#adminCircularMsgInput{
   height:38px !important;
   min-height:38px !important;
@@ -2894,99 +2785,7 @@ function toggleAdminTool(id){
   el.style.display=show?'block':'none';
 }
 
-  /* ============================================================
-     QR CODE - LIVE FILE STATUS
-     ============================================================ */
-  let currentQRLink = "";
-
-  function openFileQR(officeNo) {
-    try {
-      const file = getFileSafely(officeNo);
-
-      if (!file) {
-        alert("கோப்பு தகவல் கிடைக்கவில்லை.");
-        return;
-      }
-
-      const githubBase = "https://satheeshdcgobi-commits.github.io/deoerd/";
-      currentQRLink =
-        githubBase + "?fileStatus=" +
-        encodeURIComponent(String(officeNo));
-
-      const modal = document.getElementById("qrModal");
-      const box = document.getElementById("qrCodeCanvas");
-      const title = document.getElementById("qrFileTitle");
-      const link = document.getElementById("qrStatusLink");
-
-      if (!modal || !box || !title || !link) {
-        alert("QR பகுதி page-ல் ஏற்றப்படவில்லை. index.html-ஐ refresh செய்து மீண்டும் முயற்சிக்கவும்.");
-        return;
-      }
-
-      title.textContent = "கோப்பு எண்: " + officeNo;
-      link.textContent = currentQRLink;
-      box.innerHTML = "";
-
-      if (typeof QRCode === "undefined") {
-        box.innerHTML =
-          '<div style="color:#b91c1c;font-weight:700;text-align:center;">' +
-          'QR library ஏற்றப்படவில்லை. Internet connection சரிபார்க்கவும்.' +
-          '</div>';
-      } else {
-        new QRCode(box, {
-          text: currentQRLink,
-          width: 230,
-          height: 230,
-          correctLevel: QRCode.CorrectLevel.M
-        });
-      }
-
-      modal.style.display = "flex";
-
-    } catch (err) {
-      console.error("QR Error:", err);
-      alert("QR Code திறக்க முடியவில்லை. Page-ஐ refresh செய்து மீண்டும் முயற்சிக்கவும்.");
-    }
-  }
-
-  function closeFileQR() {
-    const modal = document.getElementById("qrModal");
-    if (modal) modal.style.display = "none";
-  }
-
-  function openCurrentQRLink() {
-    if (currentQRLink) window.open(currentQRLink, "_blank");
-  }
-
-  function downloadCurrentQR() {
-    const box = document.getElementById("qrCodeCanvas");
-    if (!box) return;
-
-    const canvas = box.querySelector("canvas");
-    const img = box.querySelector("img");
-
-    if (canvas) {
-      const a = document.createElement("a");
-      a.href = canvas.toDataURL("image/png");
-      a.download = "QR_File_Status.png";
-      a.click();
-    } else if (img && img.src) {
-      const a = document.createElement("a");
-      a.href = img.src;
-      a.download = "QR_File_Status.png";
-      a.click();
-    } else {
-      alert("QR படம் இன்னும் உருவாகவில்லை.");
-    }
-  }
-
-  window.addEventListener("click", function(e) {
-    const modal = document.getElementById("qrModal");
-    if (e.target === modal) closeFileQR();
-  });
-
-
-  /* ============================================================
+    /* ============================================================
      QR STATUS PAGE
      QR -> GitHub Pages -> Google Apps Script -> Files Sheet
      ============================================================ */
@@ -3059,12 +2858,11 @@ function toggleAdminTool(id){
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-  const params = new URLSearchParams(window.location.search);
-
-  if (params.has("fileStatus")) {
-    openQRStatusPage();
-  }
-});
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("fileStatus") && params.get("fileStatus")) {
+      openQRStatusPage();
+    }
+  });
 
 
 /* ============================================================
@@ -3095,7 +2893,6 @@ function openStickerOptions(officeNo){
   const file=getFileSafely(officeNo);
   if(!file){ alert("கோப்பு தகவல் கிடைக்கவில்லை."); return; }
   currentStickerOfficeNo=String(officeNo);
-  const st=getStickerSettings();
   // மாதிரிப் படத்தைப் போல QR எப்போதும் வலது பக்கத்தில் இருக்கும்.
   updateStickerPreview();
   document.getElementById("stickerOptionsModal").style.display="flex";
@@ -3109,7 +2906,6 @@ function updateStickerPreview(){
   const box=document.getElementById("stickerPreview");
   if(!file||!box)return;
   const school=(typeof SCHOOL_NAMES!=="undefined"&&SCHOOL_NAMES[file.schoolId])?SCHOOL_NAMES[file.schoolId]:(file.schoolId||"");
-  const st=getStickerSettings();
   const qrURL="https://satheeshdcgobi-commits.github.io/deoerd/?fileStatus="+encodeURIComponent(String(file.officeNo));
 
   box.style.maxWidth="900px";
@@ -3136,7 +2932,7 @@ function updateStickerPreview(){
       </div>
       <div>
         <div class="sticker-qr-box" id="stickerQRBox"></div>
-        <div class="sticker-qr-caption">QR – Live Status</div>
+        <div class="sticker-qr-caption">QR Code</div>
       </div>
     </div>`;
 
@@ -3204,5 +3000,16 @@ function printFileSticker(){
     <div style="margin-top:8px;color:#64748b;font-size:.82rem;">
       கீழே உள்ள வடிவம் நீங்கள் கொடுத்த மாதிரி Sticker அமைப்பைப் போலவே இருக்கும். கோப்பு எண், நாள், பள்ளி பெயர், கோரிக்கை மற்றும் கோரிக்கை விவரம் மனு பதிவிலிருந்து தானாக வரும்.
     </div>
+
+    <div class="sticker-preview-wrap">
+      <div id="stickerPreview" class="sticker-preview"></div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px;">
+      <button class="btn btn-success" onclick="printFileSticker()">🖨️ Sticker Print</button>
+      <button class="btn btn-secondary" onclick="closeStickerOptions()">ரத்து</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
