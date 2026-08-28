@@ -395,8 +395,9 @@
         <button class="btn btn-warning btn-sm" id="monthlyReportBtn" style="display:none;" onclick="generateMonthlyArrearReport()">📑 மாதாந்திர அறிக்கை</button>
         <button class="btn btn-danger btn-sm" id="adminConsolidatedPendingBtn" style="display:none;" onclick="generateAdminConsolidatedPendingSlip()">📋 ஒட்டுமொத்த நிலுவை அறிக்கை</button>
         <button class="btn btn-secondary btn-sm" id="handoverBtn" style="display:none;" onclick="generateHandoverSlip()">📋 பொறுப்பு ஒப்படைப்பு</button>
+        <button class="btn btn-success btn-sm" id="contactsSettingsBtn" style="display:none;" onclick="openContactsModal()">📞 JA / HM எண்கள்</button>
         <button class="btn btn-secondary btn-sm" id="schoolPendingSlipBtn" style="display:none;" onclick="generateSchoolPendingSlip()">🖨️ நிலுவை அறிக்கை அச்சு</button>
-        <button class="btn btn-secondary btn-sm" id="contactsSettingsBtn" style="display:none;" onclick="openContactsModal()">📞 JA & HM</button>
+        
       </div>
     </div>
 
@@ -404,7 +405,7 @@
     <div id="adminSchoolCircularPanel" class="card" style="display: none; background: #f8fafc; border: 1px solid #cbd5e1;">
       <h3 style="margin-top: 0; color: var(--gov-dark); font-size: 1.1rem;">அட்மின் கட்டுப்பாட்டுப் பலகம் (Admin Panel)</h3>
       <p style="margin: 0 0 15px 0; font-size: 0.85rem; color: #64748b;">பிரிவு எழுத்தர் - பிரிவு அ2</p>
-      <div style="border-top:1px solid var(--border);padding-top:15px;margin-bottom:15px;"><h4 style="color:#16a34a;">📲 WA Broadcast</h4><textarea id="waBroadcastMessage" rows="3" placeholder="தேர்வு செய்யப்பட்ட பள்ளிகளுக்கு அனுப்ப வேண்டிய WhatsApp செய்தியை உள்ளிடவும்..."></textarea><div id="waBroadcastContacts" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px;margin:8px 0;"></div><div><button class="btn btn-ja btn-sm" onclick="selectAllBroadcastContacts()">☑️ அனைத்தையும் தேர்வு</button> <button class="btn btn-secondary btn-sm" onclick="clearBroadcastContacts()">✕ ரத்து</button> <button class="btn btn-success btn-sm" onclick="openWABroadcast()">📲 WA Broadcast திறக்க</button></div></div>
+      <div style="border-top:1px solid var(--border);padding-top:15px;margin-bottom:15px;"><h4 style="color:#16a34a;">📲 WA Broadcast</h4><textarea id="waBroadcastMessage" rows="2" placeholder="தேர்வு செய்யப்பட்ட பள்ளிகளுக்கு அனுப்ப வேண்டிய WhatsApp செய்தியை உள்ளிடவும்..."></textarea><div id="waBroadcastContacts" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px;margin:8px 0;"></div><div><button class="btn btn-ja btn-sm" onclick="selectAllBroadcastContacts()">☑️ அனைத்தையும் தேர்வு</button> <button class="btn btn-secondary btn-sm" onclick="clearBroadcastContacts()">✕ ரத்து</button> <button class="btn btn-success btn-sm" onclick="openWABroadcast()">📲 WA Broadcast திறக்க</button></div></div>
       
       <div style="border-top: 1px solid var(--border); padding-top: 15px;">
         <h4 style="color: #0f172a; font-size: 1rem; margin-bottom: 10px;">📢 School Circular (பள்ளி சுற்றறிக்கை அனுப்புதல்)</h4>
@@ -417,7 +418,7 @@
           </div>
           <div>
             <label>சுற்றறிக்கை செய்தி:</label>
-            <textarea id="adminCircularMsgInput" rows="3" placeholder="குறிப்பிட்ட பள்ளிக்கு அனுப்ப வேண்டிய செய்தியை இங்கே தட்டச்சு செய்யவும்..."></textarea>
+            <textarea id="adminCircularMsgInput" rows="2" placeholder="குறிப்பிட்ட பள்ளிக்கு அனுப்ப வேண்டிய செய்தியை இங்கே தட்டச்சு செய்யவும்..."></textarea>
           </div>
           <div>
             <button class="btn btn-primary btn-sm" onclick="saveAdminSchoolCircular()">📤 சுற்றறிக்கையைப் பதிவு செய்</button>
@@ -881,7 +882,7 @@
 <!-- பள்ளி தொடர்புகள் பாப்-அப் -->
 <div id="contactsModal" class="modal">
   <div class="modal-content">
-    <h3>📞 பள்ளி JA & HM வாட்ஸ்அப் எண்கள்</h3>
+    <h3 style="color:#166534;">📞 பள்ளி JA & HM WhatsApp எண் பதிவு</h3>
     <div class="form-group">
       <label>பள்ளி தேர்வு:</label>
       <select id="contactTargetSchool" onchange="loadContactDetails(this.value)">
@@ -894,15 +895,15 @@
       </select>
     </div>
     <div class="form-group">
-      <label>School JA WhatsApp No (91 உடன்):</label>
-      <input type="text" id="contactJaWhatsappInput" placeholder="எ.கா. 919876543210">
+      <label>👤 School JA WhatsApp எண் (91 உடன்):</label>
+      <input type="tel" id="contactJaWhatsappInput" inputmode="numeric" maxlength="12" placeholder="எ.கா. 919876543210">
     </div>
     <div class="form-group">
-      <label>School HM WhatsApp No (91 உடன்):</label>
-      <input type="text" id="contactHmWhatsappInput" placeholder="எ.கா. 919876543211">
+      <label>👨‍🏫 School HM WhatsApp எண் (91 உடன்):</label>
+      <input type="tel" id="contactHmWhatsappInput" inputmode="numeric" maxlength="12" placeholder="எ.கா. 919876543211">
     </div>
     <div style="display:flex; gap:10px; margin-top:15px;">
-      <button onclick="saveContactDetails()" class="btn" style="flex:1;">சேமி</button>
+      <button onclick="saveContactDetails()" class="btn btn-success" style="flex:1;">💾 எண்களைச் சேமி</button>
       <button onclick="closeContactsModal()" class="btn btn-danger" style="flex:1;">மூடு</button>
     </div>
   </div>
@@ -2297,7 +2298,137 @@ function populateAdminSchoolDropdown() {
           @page { size: A4 landscape; margin: 8mm; }
           body { font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; margin: 0; padding: 10px; }
           table { width: 100%; border-collapse: collapse; }
-        </style>
+        
+/* ===== Compact Admin Panel - visual only, functionality unchanged ===== */
+#adminSchoolCircularPanel{
+  padding:14px !important;
+  background:linear-gradient(135deg,#f8fbff 0%,#ffffff 100%) !important;
+  border:1px solid #cbd5e1 !important;
+  border-radius:14px !important;
+  box-shadow:0 6px 18px rgba(15,23,42,.06) !important;
+}
+#adminSchoolCircularPanel > h3{
+  display:inline-block !important;
+  margin:0 8px 2px 0 !important;
+  font-size:1rem !important;
+}
+#adminSchoolCircularPanel > p{
+  display:inline-block !important;
+  margin:0 !important;
+  font-size:.72rem !important;
+  color:#64748b !important;
+}
+#adminSchoolCircularPanel > div{
+  border-top:1px solid #e2e8f0 !important;
+  padding-top:9px !important;
+  margin-top:8px !important;
+  margin-bottom:0 !important;
+}
+#adminSchoolCircularPanel h4{
+  font-size:.82rem !important;
+  margin:0 0 7px !important;
+}
+#waBroadcastMessage{
+  min-height:42px !important;
+  height:42px !important;
+  resize:vertical !important;
+  padding:8px 10px !important;
+  font-size:.78rem !important;
+}
+#waBroadcastContacts{
+  display:grid !important;
+  grid-template-columns:repeat(6,minmax(105px,1fr)) !important;
+  gap:5px !important;
+  margin:6px 0 !important;
+}
+#waBroadcastContacts label{
+  min-height:44px !important;
+  padding:5px 6px !important;
+  gap:5px !important;
+  border:1px solid #dbe3ec !important;
+  border-radius:8px !important;
+  background:#fff !important;
+  font-size:.68rem !important;
+  line-height:1.2 !important;
+  cursor:pointer !important;
+  transition:.15s ease !important;
+}
+#waBroadcastContacts label:hover{
+  border-color:#25d366 !important;
+  background:#f0fdf4 !important;
+  transform:translateY(-1px);
+}
+#waBroadcastContacts input{
+  width:auto !important;
+  margin:2px 0 0 !important;
+  flex:0 0 auto !important;
+}
+#waBroadcastContacts small{
+  font-size:.58rem !important;
+  color:#64748b !important;
+  white-space:nowrap !important;
+}
+#adminSchoolCircularPanel .btn-sm{
+  padding:4px 8px !important;
+  font-size:.68rem !important;
+  border-radius:6px !important;
+}
+#adminSchoolCircularPanel #adminCircularSchoolSelect{
+  padding:7px 9px !important;
+  font-size:.76rem !important;
+}
+#adminCircularMsgInput{
+  min-height:42px !important;
+  height:42px !important;
+  resize:vertical !important;
+  padding:8px 10px !important;
+  font-size:.78rem !important;
+}
+#adminSchoolCircularPanel > div:last-child > div{
+  display:grid !important;
+  grid-template-columns:minmax(190px,.8fr) minmax(300px,1.5fr) auto !important;
+  gap:7px !important;
+  align-items:end !important;
+}
+#adminSchoolCircularPanel > div:last-child > div > div{
+  margin:0 !important;
+}
+#adminSchoolCircularPanel label{
+  font-size:.68rem !important;
+  margin-bottom:3px !important;
+}
+@media(max-width:900px){
+  #waBroadcastContacts{
+    grid-template-columns:repeat(3,minmax(100px,1fr)) !important;
+  }
+  #adminSchoolCircularPanel > div:last-child > div{
+    grid-template-columns:1fr !important;
+  }
+}
+@media(max-width:600px){
+  #waBroadcastContacts{
+    grid-template-columns:repeat(2,minmax(100px,1fr)) !important;
+  }
+  #adminSchoolCircularPanel{
+    padding:10px !important;
+  }
+}
+
+
+/* ===== JA / HM WhatsApp Contact Registration ===== */
+#contactsSettingsBtn{background:#16a34a !important;color:#fff !important;}
+#contactsSettingsBtn:hover{background:#15803d !important;}
+#contactsModal .modal-content{
+  max-width:520px !important;
+  border-top:4px solid #16a34a !important;
+}
+#contactsModal .form-group{margin-bottom:10px !important;}
+#contactsModal input,#contactsModal select{
+  padding:9px 10px !important;
+  font-size:.85rem !important;
+}
+
+</style>
       </head>
       <body>
         <div style="text-align: center; border-bottom: 2px solid #0c4a6e; padding-bottom: 6px; margin-bottom: 12px;">
@@ -2597,12 +2728,21 @@ function populateAdminSchoolDropdown() {
   }
   function saveContactDetails() {
     const targetSchool = document.getElementById('contactTargetSchool').value;
-    const jaPhone = document.getElementById('contactJaWhatsappInput').value.trim();
-    const hmPhone = document.getElementById('contactHmWhatsappInput').value.trim();
+    const jaPhone = document.getElementById('contactJaWhatsappInput').value.replace(/\\D/g, '');
+    const hmPhone = document.getElementById('contactHmWhatsappInput').value.replace(/\\D/g, '');
+
+    const validPhone = (p) => !p || /^91\\d{10}$/.test(p);
+    if (!validPhone(jaPhone) || !validPhone(hmPhone)) {
+      alert("WhatsApp எண் 91 உடன் 12 இலக்கமாக இருக்க வேண்டும். உதாரணம்: 919876543210");
+      return;
+    }
+
     const contacts = getContacts();
     contacts[targetSchool] = { jaPhone, hmPhone };
     localStorage.setItem('system_contacts_v15', JSON.stringify(contacts));
-    alert("பள்ளி JA மற்றும் HM எண்கள் வெற்றிகரமாக சேமிக்கப்பட்டது!");
+    renderBroadcastContacts();
+
+    alert("பள்ளி JA மற்றும் HM WhatsApp எண்கள் வெற்றிகரமாக சேமிக்கப்பட்டது!");
     closeContactsModal();
   }
 
