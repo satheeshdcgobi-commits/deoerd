@@ -420,9 +420,21 @@
           <span class="toolIcon">📢</span><span>School Circular</span>
         </button>
       </div>
-      <div id="waToolSection" class="adminToolSection compactToolSection" style="display:none;border-top:1px solid var(--border);padding-top:10px;margin-bottom:10px;"><h4 style="color:#16a34a;">📲 WA Broadcast</h4><textarea id="waBroadcastMessage" rows="2" placeholder="தேர்வு செய்யப்பட்ட பள்ளிகளுக்கு அனுப்ப வேண்டிய WhatsApp செய்தியை உள்ளிடவும்..."></textarea><div id="waBroadcastContacts" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px;margin:8px 0;"></div><div><button class="btn btn-ja btn-sm" onclick="selectAllBroadcastContacts()">☑️ அனைத்தையும் தேர்வு</button> <button class="btn btn-secondary btn-sm" onclick="clearBroadcastContacts()">✕ ரத்து</button> <button class="btn btn-success btn-sm" onclick="openWABroadcast()">📲 WA Broadcast திறக்க</button></div></div>
-      
-      <div id="circularToolSection" class="adminToolSection compactToolSection" style="display:none;border-top:1px solid var(--border);padding-top:10px;">
+      <div id="waToolSection" class="adminToolSection compactToolSection" style="display:none;border-top:1px solid var(--border);padding-top:10px;margin-bottom:10px;">
+        <h4 style="color:#16a34a;">📲 WA Broadcast</h4>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;">
+          <div>
+            <textarea id="waBroadcastMessage" rows="2" placeholder="WhatsApp குழுவில் பகிர வேண்டிய செய்தியை இங்கே எழுதவும்..."></textarea>
+            <small style="display:block;color:#64748b;margin-top:4px;">💡 தனிப்பட்ட பள்ளி எண்களுக்கு அனுப்பாமல், WhatsApp Web-ஐ திறந்து நீங்கள் விரும்பும் Group-ல் நேரடியாக பகிரலாம்.</small>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="btn btn-secondary btn-sm" onclick="copyWABroadcastMessage()">📋 Copy</button>
+            <button class="btn btn-success btn-sm" onclick="openWABroadcast()">🌐 WhatsApp Web</button>
+          </div>
+        </div>
+      </div>
+
+      $1 class="adminToolSection compactToolSection" style="display:none;border-top:1px solid var(--border);padding-top:10px;">
         <h4 style="color: #0f172a; font-size: .9rem; margin-bottom: 7px;">📢 School Circular</h4>
         <div style="display: grid; gap: 10px;">
           <div>
@@ -520,6 +532,14 @@
         <h3 id="statThisMonth" style="color: #0284c7;">0</h3>
         <p>📅 இந்த மாத மனுக்கள்</p>
       </div>
+
+    <!-- பள்ளி வாரியான கோப்பு நிலவரம் -->
+    <div id="schoolFileSummaryCard" class="card admin-only-summary" style="display:none; margin-top:12px; border-left:4px solid #0ea5e9;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <h3 style="margin:0;color:#0c4a6e;font-size:1rem;">🏫 பள்ளி வாரியான கோப்பு நிலவரம்</h3>
+        <small style="color:#64748b;">உங்கள் index.html-ல் உள்ள பள்ளி பெயர்களே பயன்படுத்தப்படுகின்றன.</small>
+      </div>
+      <div id="schoolFileSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;margin-top:10px;"></div>
     </div>
 
     <!-- பள்ளி பயனர் தேடல் பெட்டி -->
@@ -848,6 +868,9 @@
     <div class="form-group">
       <label>குறிப்பு (Remarks):</label>
       <textarea id="modalRemark" rows="2" placeholder="குறிப்புகளை உள்ளிடவும்..."></textarea>
+    </div>
+    <div id="movementTimeline">
+      <div style="color:#64748b;font-size:.78rem;">நகர்வு வரலாறு ஏற்றப்படுகிறது...</div>
     </div>
     <div style="display:flex; gap:10px; margin-top:15px;">
       <button onclick="saveStatusUpdate()" id="updateStatusBtn" class="btn" style="flex:1;">புதுப்பி (Update)</button>
@@ -1226,10 +1249,32 @@
     checkSchoolUrgentAlerts();
   }
 
-  function renderBroadcastContacts(){const box=document.getElementById('waBroadcastContacts');if(!box)return;const c=getContacts();box.innerHTML=Object.keys(SCHOOL_NAMES).map(id=>{const x=c[id]||{},n=x.jaPhone||x.hmPhone||'';return `<label style="display:flex;gap:7px;padding:7px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;"><input type="checkbox" class="wa-broadcast-contact" data-phone="${n}"><span><b>${SCHOOL_NAMES[id]}</b><br><small>${n||'WhatsApp எண் பதிவு செய்யப்படவில்லை'}</small></span></label>`}).join('')}
-function selectAllBroadcastContacts(){renderBroadcastContacts();document.querySelectorAll('.wa-broadcast-contact').forEach(x=>x.checked=true)}
-function clearBroadcastContacts(){document.querySelectorAll('.wa-broadcast-contact').forEach(x=>x.checked=false)}
-function openWABroadcast(){const m=(document.getElementById('waBroadcastMessage')||{}).value||'';if(!m.trim()){alert('Broadcast செய்தியை உள்ளிடவும்!');return}const a=Array.from(document.querySelectorAll('.wa-broadcast-contact:checked'));if(!a.length){alert('குறைந்தது ஒரு பள்ளியைத் தேர்வு செய்யவும்!');return}a.forEach((x,i)=>setTimeout(()=>window.open(`https://wa.me/${x.dataset.phone}?text=${encodeURIComponent(m)}`,'_blank'),i*700))}
+  function copyWABroadcastMessage(){
+  const el=document.getElementById('waBroadcastMessage');
+  const m=el ? el.value.trim() : '';
+  if(!m){ alert('முதலில் WhatsApp செய்தியை உள்ளிடவும்!'); return; }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(m).then(
+      ()=>alert('WhatsApp செய்தி Copy செய்யப்பட்டது. WhatsApp Web-ல் உங்கள் Group-ல் Paste செய்யலாம்.'),
+      ()=>fallbackCopyWA_(m)
+    );
+  }else{
+    fallbackCopyWA_(m);
+  }
+}
+function fallbackCopyWA_(m){
+  const ta=document.createElement('textarea');
+  ta.value=m; document.body.appendChild(ta); ta.select();
+  try{document.execCommand('copy'); alert('WhatsApp செய்தி Copy செய்யப்பட்டது.');}
+  catch(e){alert('Copy செய்ய முடியவில்லை. செய்தியை கைமுறையாக Copy செய்யவும்.');}
+  ta.remove();
+}
+function openWABroadcast(){
+  const m=(document.getElementById('waBroadcastMessage')||{}).value||'';
+  if(!m.trim()){alert('முதலில் WhatsApp செய்தியை உள்ளிடவும்!');return;}
+  copyWABroadcastMessage();
+  window.open('https://web.whatsapp.com/','_blank','noopener');
+}
 
 function populateAdminSchoolDropdown() {
     const selectEl = document.getElementById('adminCircularSchoolSelect');
@@ -1380,6 +1425,81 @@ function populateAdminSchoolDropdown() {
     return Math.floor(diffTime / (1000 * 60 * 60 * 24));
   }
 
+  function renderSchoolFileSummary_(files, isAdmin){
+    const card=document.getElementById('schoolFileSummaryCard');
+    const box=document.getElementById('schoolFileSummary');
+    if(!card || !box) return;
+    if(!isAdmin){
+      card.style.display='none';
+      return;
+    }
+    card.style.display='block';
+
+    const ids=Object.keys(SCHOOL_NAMES).filter(id=>id!=='SCH_OTHERS');
+    const items=ids.map(id=>{
+      const list=files.filter(f=>f.schoolId===id);
+      const pending=list.filter(f=>!['முடிவுற்றது','நிராகரிக்கப்பட்டது'].includes(f.status)).length;
+      const completed=list.filter(f=>['முடிவுற்றது','நிராகரிக்கப்பட்டது'].includes(f.status)).length;
+      const overdue=list.filter(f=>{
+        if(['முடிவுற்றது','நிராகரிக்கப்பட்டது'].includes(f.status)) return false;
+        return calculateDaysPending(f.officeDate) > (parseInt(f.slaDays)||15);
+      }).length;
+      return `<div class="school-summary-item">
+        <div class="school-summary-name">${escapeHtmlSafe_(SCHOOL_NAMES[id])}</div>
+        <div class="school-summary-counts">
+          <span>மொத்தம் <b>${list.length}</b></span>
+          <span>நிலுவை <b>${pending}</b></span>
+          <span>முடிவு <b>${completed}</b></span>
+          <span>தாமதம் <b>${overdue}</b></span>
+        </div>
+      </div>`;
+    }).join('');
+
+    const otherFiles=files.filter(f=>f.schoolId==='SCH_OTHERS');
+    const otherPending=otherFiles.filter(f=>!['முடிவுற்றது','நிராகரிக்கப்பட்டது'].includes(f.status)).length;
+    const otherCompleted=otherFiles.length-otherPending;
+    const otherOverdue=otherFiles.filter(f=>{
+      if(['முடிவுற்றது','நிராகரிக்கப்பட்டது'].includes(f.status)) return false;
+      return calculateDaysPending(f.officeDate) > (parseInt(f.slaDays)||15);
+    }).length;
+
+    box.innerHTML=items + `<div class="school-summary-item">
+      <div class="school-summary-name">${escapeHtmlSafe_(SCHOOL_NAMES.SCH_OTHERS)}</div>
+      <div class="school-summary-counts">
+        <span>மொத்தம் <b>${otherFiles.length}</b></span>
+        <span>நிலுவை <b>${otherPending}</b></span>
+        <span>முடிவு <b>${otherCompleted}</b></span>
+        <span>தாமதம் <b>${otherOverdue}</b></span>
+      </div>
+    </div>`;
+  }
+
+  function escapeHtmlSafe_(value){
+    return String(value ?? '').replace(/[&<>"']/g,function(ch){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];
+    });
+  }
+
+  function renderMovementTimeline_(file){
+    const box=document.getElementById('movementTimeline');
+    if(!box) return;
+    const history=Array.isArray(file.history)?file.history:[];
+    if(!history.length){
+      box.innerHTML='<div style="color:#64748b;font-size:.78rem;">இதுவரை நகர்வு வரலாறு பதிவு செய்யப்படவில்லை.</div>';
+      return;
+    }
+    box.innerHTML=history.slice().reverse().map(h=>{
+      const stage=h.stage || `${h.officer||''} (${file.status||''})`;
+      return `<div class="movement-item">
+        <div class="movement-date">${escapeHtmlSafe_(h.date||'-')}</div>
+        <div>
+          <div class="movement-stage">${escapeHtmlSafe_(stage)}</div>
+          ${h.remark?`<div class="movement-remark">📝 ${escapeHtmlSafe_(h.remark)}</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
   function renderDashboard() {
     const allFiles = memoryFiles;
     const isAdmin = currentUser === 'ADMIN';
@@ -1412,6 +1532,7 @@ function populateAdminSchoolDropdown() {
     document.getElementById('statUrgent').innerText = urgentCount;
     document.getElementById('statOverdue').innerText = overdueCount;
     document.getElementById('statThisMonth').innerText = thisMonthCount;
+    renderSchoolFileSummary_(accessibleFiles, isAdmin);
 
     let displayFiles = accessibleFiles;
     if (currentFilter === 'PENDING') displayFiles = accessibleFiles.filter(f => f.status !== 'முடிவுற்றது' && f.status !== 'நிராகரிக்கப்பட்டது');
@@ -1501,7 +1622,6 @@ function populateAdminSchoolDropdown() {
               <button class="btn btn-sm" onclick="openStatusModal(decodeURIComponent('${safeOfficeNo}'))">நிலை</button>
               <button class="btn btn-sm btn-edit" onclick="openEditModal(decodeURIComponent('${safeOfficeNo}'))" title="விவரங்களை திருத்து">✏️ Edit</button>
               <button class="btn btn-sm btn-warning" onclick="openStickerOptions(decodeURIComponent('${safeOfficeNo}'))" title="Sticker">🏷️ Sticker</button>
-              <button class="btn btn-sm btn-qr" onclick="openFileQR(decodeURIComponent('${safeOfficeNo}'))" title="QR Code">🔳 QR</button>
               ${file.status === 'முடிவுற்றது' ? `<button class="btn btn-sm btn-archive" onclick="archiveSingleFile(decodeURIComponent('${safeOfficeNo}'))" title="காப்பகத்திற்கு மாற்று">📦 Archive</button>` : ''}
               <button class="btn btn-sm btn-danger" onclick="deleteFile(decodeURIComponent('${safeOfficeNo}'))" title="கோப்பினை நீக்கு">🗑️ நீக்கு</button>
             ` : ''}
@@ -1715,6 +1835,7 @@ function populateAdminSchoolDropdown() {
     handleOfficerSelection(file.currentWith || "பிரிவு எழுத்தர் (Section Assistant)");
     document.getElementById('modalStatus').value = file.status;
     handleStatusSelection(file.status);
+    renderMovementTimeline_(file);
 
     document.getElementById('statusModal').style.display = 'flex';
   }
@@ -2318,6 +2439,21 @@ function populateAdminSchoolDropdown() {
   }
 }
 
+
+
+#waBroadcastContacts{display:none !important;}
+#schoolFileSummaryCard .school-summary-item{
+  border:1px solid #dbeafe;background:#f8fafc;border-radius:10px;padding:9px 10px;
+}
+#schoolFileSummaryCard .school-summary-name{font-size:.78rem;font-weight:800;color:#0f172a;line-height:1.25;}
+#schoolFileSummaryCard .school-summary-counts{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;font-size:.68rem;}
+#schoolFileSummaryCard .school-summary-counts span{padding:3px 6px;border-radius:999px;background:#fff;border:1px solid #e2e8f0;}
+#movementTimeline{margin-top:10px;padding:10px;border:1px solid #dbeafe;background:#f8fafc;border-radius:10px;}
+.movement-item{display:grid;grid-template-columns:86px 1fr;gap:8px;padding:7px 0;border-bottom:1px dashed #cbd5e1;font-size:.76rem;}
+.movement-item:last-child{border-bottom:0;}
+.movement-date{color:#64748b;font-weight:700;}
+.movement-stage{color:#0f172a;font-weight:700;}
+.movement-remark{color:#475569;font-weight:500;margin-top:2px;}
 
 /* ===== Final JA / HM WhatsApp Contact Registration ===== */
 #contactsSettingsBtn{background:#16a34a !important;border-color:#15803d !important;color:#fff !important;font-weight:700 !important;}
@@ -2953,6 +3089,7 @@ function openStickerOptions(officeNo){
   const file=getFileSafely(officeNo);
   if(!file){ alert("கோப்பு தகவல் கிடைக்கவில்லை."); return; }
   currentStickerOfficeNo=String(officeNo);
+  const st=getStickerSettings();
   // மாதிரிப் படத்தைப் போல QR எப்போதும் வலது பக்கத்தில் இருக்கும்.
   updateStickerPreview();
   document.getElementById("stickerOptionsModal").style.display="flex";
@@ -2966,6 +3103,7 @@ function updateStickerPreview(){
   const box=document.getElementById("stickerPreview");
   if(!file||!box)return;
   const school=(typeof SCHOOL_NAMES!=="undefined"&&SCHOOL_NAMES[file.schoolId])?SCHOOL_NAMES[file.schoolId]:(file.schoolId||"");
+  const st=getStickerSettings();
   const qrURL="https://satheeshdcgobi-commits.github.io/deoerd/?fileStatus="+encodeURIComponent(String(file.officeNo));
 
   box.style.maxWidth="900px";
@@ -2992,7 +3130,7 @@ function updateStickerPreview(){
       </div>
       <div>
         <div class="sticker-qr-box" id="stickerQRBox"></div>
-        <div class="sticker-qr-caption">QR Code</div>
+        <div class="sticker-qr-caption">QR – Live Status</div>
       </div>
     </div>`;
 
@@ -3050,27 +3188,6 @@ function printFileSticker(){
 
 </script>
 
-<!-- 🔳 QR Code Modal - REAL DOM -->
-<div id="qrModal" class="modal" style="display:none;">
-  <div class="modal-content qr-modal-box">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0;color:#111827;">🔳 கோப்பு QR Code</h3>
-      <button class="btn btn-sm btn-danger" onclick="closeFileQR()">மூடு ✕</button>
-    </div>
-    <div id="qrFileTitle" style="margin-top:10px;font-weight:800;color:#0c4a6e;"></div>
-    <div id="qrCodeCanvas" style="display:flex;justify-content:center;align-items:center;min-height:240px;"></div>
-    <div id="qrStatusHint" style="font-size:.84rem;color:#475569;margin:10px 0;">
-      QR-ஐ scan செய்தவுடன் கோப்பின் தற்போதைய நிலை திறக்கும்.
-    </div>
-    <div id="qrStatusLink" class="qr-status-link" style="word-break:break-all;font-size:.72rem;"></div>
-    <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
-      <button class="btn btn-secondary btn-sm" onclick="downloadCurrentQR()">⬇️ QR படம்</button>
-      <button class="btn btn-sm" onclick="openCurrentQRLink()">🌐 Status திற</button>
-    </div>
-  </div>
-</div>
-
-
 <!-- 🏷️ Sticker Options -->
 <div id="stickerOptionsModal" class="modal" style="display:none;">
   <div class="modal-content sticker-modal-box">
@@ -3081,16 +3198,5 @@ function printFileSticker(){
     <div style="margin-top:8px;color:#64748b;font-size:.82rem;">
       கீழே உள்ள வடிவம் நீங்கள் கொடுத்த மாதிரி Sticker அமைப்பைப் போலவே இருக்கும். கோப்பு எண், நாள், பள்ளி பெயர், கோரிக்கை மற்றும் கோரிக்கை விவரம் மனு பதிவிலிருந்து தானாக வரும்.
     </div>
-
-    <div class="sticker-preview-wrap">
-      <div id="stickerPreview" class="sticker-preview"></div>
-    </div>
-
-    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px;">
-      <button class="btn btn-success" onclick="printFileSticker()">🖨️ Sticker Print</button>
-      <button class="btn btn-secondary" onclick="closeStickerOptions()">ரத்து</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
