@@ -673,41 +673,19 @@ tbody tr:hover{
 }
 </style>
 
-
 <style id="digital-bundle-style">
 .bundle-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}
 .bundle-toolbar input{max-width:220px;padding:7px 10px;border:1px solid #cbd9e5;border-radius:9px}
-.bundle-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0c4a6e;font-weight:800;padding:6px 9px;font-size:.75rem;cursor:pointer}
-.bundle-btn:hover{background:#f0f7fc;border-color:#8db5d0}
-.bundle-modal{position:fixed;inset:0;z-index:99999;background:rgba(8,25,40,.58);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:15px}
+.bundle-btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0c4a6e;font-weight:800;padding:6px 9px;font-size:.75rem;cursor:pointer}
+.bundle-modal{position:fixed;inset:0;z-index:99999;background:rgba(8,25,40,.58);display:none;align-items:center;justify-content:center;padding:15px}
 .bundle-box{width:min(720px,96vw);max-height:88vh;overflow:auto;background:#fff;border-radius:18px;border:1px solid #d8e3ec;box-shadow:0 25px 70px rgba(8,47,73,.22);padding:20px}
-.bundle-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
-.bundle-head h3{margin:0;color:#082f49;font-size:1.08rem}.bundle-close{border:0;background:#eef4f8;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:18px}
-.bundle-current{background:linear-gradient(135deg,#f4f9fd,#edf5fa);border:1px solid #d8e6ef;border-radius:12px;padding:11px 13px;margin-bottom:12px}
-.bundle-list{display:flex;flex-direction:column;gap:7px;max-height:330px;overflow:auto}
-.bundle-item{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid #e1e9ef;border-radius:10px;padding:9px 10px;background:#fff;cursor:pointer}
-.bundle-item:hover{background:#f8fbfd}.bundle-selected{background:#eff8ff;border-color:#9fc7e3}
-.bundle-item-main{min-width:0}.bundle-item-main strong{display:block;font-size:.82rem}.bundle-item-main span{display:block;font-size:.72rem;color:#64748b;margin-top:2px}
-.bundle-chip{display:inline-flex;align-items:center;gap:4px;margin:3px 4px 0 0;padding:4px 8px;border-radius:999px;background:#eef7fc;border:1px solid #cfe2ef;color:#0c4a6e;font-size:.7rem;font-weight:800}
-.bundle-empty{padding:20px;text-align:center;color:#64748b}.bundle-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
-.bundle-primary{background:#0c4a6e;color:#fff;border:0;border-radius:9px;padding:8px 12px;font-weight:800;cursor:pointer}
-.bundle-secondary{background:#f1f5f9;color:#334155;border:1px solid #d6e0e8;border-radius:9px;padding:8px 12px;font-weight:800;cursor:pointer}
-</style>
-
-</head>
+.bundle-head{display:flex;align-items:center;justify-content:space-between}.bundle-close{border:0;background:#eef4f8;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:18px}
+.bundle-current{background:#f1f7fb;border:1px solid #d8e6ef;border-radius:12px;padding:11px 13px;margin:12px 0}
+.bundle-list{display:flex;flex-direction:column;gap:7px;max-height:330px;overflow:auto}.bundle-item{display:flex;align-items:center;justify-content:space-between;border:1px solid #e1e9ef;border-radius:10px;padding:9px;background:#fff;cursor:pointer}.bundle-selected{background:#eff8ff;border-color:#9fc7e3}
+.bundle-item-main strong{display:block;font-size:.82rem}.bundle-item-main span{display:block;font-size:.72rem;color:#64748b;margin-top:2px}.bundle-chip{display:inline-block;margin:3px 4px 0 0;padding:4px 8px;border-radius:999px;background:#eef7fc;border:1px solid #cfe2ef;color:#0c4a6e;font-size:.7rem;font-weight:800}.bundle-empty{padding:20px;text-align:center;color:#64748b}.bundle-actions{display:flex;gap:8px;margin-top:13px}
+.bundle-primary{background:#0c4a6e;color:#fff;border:0;border-radius:9px;padding:8px 12px;font-weight:800;cursor:pointer}.bundle-secondary{background:#f1f5f9;color:#334155;border:1px solid #d6e0e8;border-radius:9px;padding:8px 12px;font-weight:800;cursor:pointer}
+</style></head>
 <body class="theme-ADMIN">
-
-<div id="digitalBundleModal" class="bundle-modal" aria-hidden="true">
-  <div class="bundle-box">
-    <div class="bundle-head"><h3>📦 Digital Bundle</h3><button class="bundle-close" type="button" onclick="closeDigitalBundle()">×</button></div>
-    <div id="bundleCurrentFile" class="bundle-current"></div>
-    <input id="bundleSearchInput" type="search" placeholder="🔎 கோப்பு எண் / பள்ளி பெயர் தேடுக..." style="width:100%;box-sizing:border-box;margin-bottom:10px;padding:9px;border:1px solid #cbd9e5;border-radius:9px" oninput="renderBundleCandidates()">
-    <div id="bundleCandidateList" class="bundle-list"></div>
-    <div id="bundleSelectedInfo" style="margin-top:10px"></div>
-    <div class="bundle-actions"><button class="bundle-primary" type="button" onclick="saveDigitalBundle()">🔗 Bundle-ல் இணைக்கவும்</button><button class="bundle-secondary" type="button" onclick="closeDigitalBundle()">மூடு</button></div>
-  </div>
-</div>
-
 
 <div class="container">
 
@@ -1081,13 +1059,11 @@ tbody tr:hover{
       </div>
       
       <div style="overflow-x:auto;">
-        
-<div id="digitalBundleToolbar" class="bundle-toolbar">
-  <button type="button" class="bundle-btn" onclick="openBundleFromToolbar()">📦 Digital Bundle</button>
-  <input id="bundleOfficeInput" type="text" placeholder="முதன்மை கோப்பு எண்" aria-label="முதன்மை கோப்பு எண்">
-  <span style="font-size:.72rem;color:#64748b">தொடர்புடைய கோப்புகளை ஒரே தொகுப்பாக இணைக்க</span>
+        <div id="digitalBundleToolbar" class="bundle-toolbar">
+<button type="button" class="bundle-btn" onclick="openBundleFromToolbar()">📦 Digital Bundle</button>
+<input id="bundleOfficeInput" type="text" placeholder="முதன்மை கோப்பு எண்">
+<span style="font-size:.72rem;color:#64748b">தொடர்புடைய கோப்புகளை ஒரே தொகுப்பாக இணைக்க</span>
 </div>
-
 <table id="mainFilesTable">
           <thead>
             <tr>
@@ -2432,75 +2408,6 @@ function populateAdminSchoolDropdown() {
           <tbody>${rows || '<tr><td colspan="7" style="text-align:center; padding:15px;">நிலுவைக் கோப்புகள் எதுவும் இல்லை.</td></tr>'}</tbody>
         </table>
       
-
-<script id="digital-bundle-module">
-(function(){
-  const KEY='digital_file_bundles_v1';
-  let currentNo='';
-  let selected=new Set();
-
-  function store(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}}
-  function saveStore(v){localStorage.setItem(KEY,JSON.stringify(v))}
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-
-  window.openBundleFromToolbar=function(){
-    const el=document.getElementById('bundleOfficeInput');
-    const no=el?el.value.trim():'';
-    if(!no){alert('முதலில் முதன்மை கோப்பு எண்ணை உள்ளிடவும்.');return}
-    window.openDigitalBundle(no);
-  };
-
-  window.openDigitalBundle=function(no){
-    currentNo=String(no||'').trim();
-    selected=new Set(store()[currentNo.toLowerCase()]||[]);
-    const f=(typeof getFileSafely==='function')?getFileSafely(currentNo):null;
-    const c=document.getElementById('bundleCurrentFile');
-    if(c)c.innerHTML='<strong>📂 முதன்மை கோப்பு:</strong> '+esc((f&&f.officeNo)||currentNo)+(f&&f.subject?'<br><span style="font-size:.75rem;color:#64748b">'+esc(f.subject)+'</span>':'');
-    const m=document.getElementById('digitalBundleModal');
-    if(m){m.style.display='flex';m.setAttribute('aria-hidden','false')}
-    const q=document.getElementById('bundleSearchInput');if(q){q.value='';q.focus()}
-    renderBundleCandidates();renderBundleSelection();
-  };
-
-  window.closeDigitalBundle=function(){
-    const m=document.getElementById('digitalBundleModal');
-    if(m){m.style.display='none';m.setAttribute('aria-hidden','true')}
-    currentNo='';selected=new Set();
-  };
-
-  window.renderBundleCandidates=function(){
-    const box=document.getElementById('bundleCandidateList');if(!box)return;
-    let files=(typeof memoryFiles!=='undefined'&&Array.isArray(memoryFiles))?memoryFiles.slice():[];
-    const q=String((document.getElementById('bundleSearchInput')||{}).value||'').trim().toLowerCase();
-    files=files.filter(f=>String(f.officeNo||'').trim().toLowerCase()!==currentNo.toLowerCase());
-    if(q)files=files.filter(f=>[f.officeNo,f.schoolId,f.schoolName,f.subject,f.prevRefNo].some(v=>String(v||'').toLowerCase().includes(q)));
-    if(!files.length){box.innerHTML='<div class="bundle-empty">தொடர்புடைய கோப்புகள் இல்லை.</div>';return}
-    box.innerHTML=files.slice(0,100).map(f=>{
-      const no=String(f.officeNo||''), on=selected.has(no);
-      return '<div class="bundle-item '+(on?'bundle-selected':'')+'" onclick="toggleBundleFile('+JSON.stringify(no)+')"><div class="bundle-item-main"><strong>📄 '+esc(no)+'</strong><span>'+esc(f.schoolName||f.schoolId||'')+(f.subject?' • '+esc(f.subject):'')+'</span></div><span>'+ (on?'☑️':'⬜') +'</span></div>'
-    }).join('');
-  };
-
-  window.toggleBundleFile=function(no){no=String(no);if(selected.has(no))selected.delete(no);else selected.add(no);renderBundleCandidates();renderBundleSelection()};
-  window.renderBundleSelection=function(){
-    const el=document.getElementById('bundleSelectedInfo');if(!el)return;
-    const a=Array.from(selected);
-    el.innerHTML=a.length?'<strong style="font-size:.76rem">இணைக்க தேர்வு:</strong><br>'+a.map(n=>'<span class="bundle-chip">📄 '+esc(n)+'</span>').join(''):'<span style="font-size:.74rem;color:#64748b">கோப்புகளை தேர்வு செய்யவும்.</span>';
-  };
-  window.saveDigitalBundle=function(){
-    if(!currentNo)return;
-    const s=store(),k=currentNo.toLowerCase(),old=Array.isArray(s[k])?s[k]:[];
-    s[k]=Array.from(new Set(old.concat(Array.from(selected)))).filter(n=>String(n).toLowerCase()!==k);
-    saveStore(s);
-    alert('📦 Digital Bundle சேமிக்கப்பட்டது.');
-    closeDigitalBundle();
-  };
-  window.getDigitalBundle=function(no){return store()[String(no||'').trim().toLowerCase()]||[]};
-  window.removeFromDigitalBundle=function(no,rel){const s=store(),k=String(no||'').trim().toLowerCase();s[k]=(s[k]||[]).filter(x=>String(x).toLowerCase()!==String(rel).toLowerCase());saveStore(s)};
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDigitalBundle()});
-})();
-</script>
-
 </body>
       </html>
     `);
@@ -3504,5 +3411,31 @@ function printFileSticker(){
     </div>
   </div>
 </div>
+<div id="digitalBundleModal" class="bundle-modal" aria-hidden="true">
+<div class="bundle-box">
+<div class="bundle-head"><h3>📦 Digital Bundle</h3><button class="bundle-close" type="button" onclick="closeDigitalBundle()">×</button></div>
+<div id="bundleCurrentFile" class="bundle-current"></div>
+<input id="bundleSearchInput" type="search" placeholder="🔎 கோப்பு எண் / பள்ளி பெயர் தேடுக..." style="width:100%;box-sizing:border-box;padding:9px;border:1px solid #cbd9e5;border-radius:9px" oninput="renderBundleCandidates()">
+<div id="bundleCandidateList" class="bundle-list" style="margin-top:10px"></div><div id="bundleSelectedInfo" style="margin-top:10px"></div>
+<div class="bundle-actions"><button class="bundle-primary" type="button" onclick="saveDigitalBundle()">🔗 Bundle-ல் இணைக்கவும்</button><button class="bundle-secondary" type="button" onclick="closeDigitalBundle()">மூடு</button></div>
+</div></div>
+<script id="digital-bundle-module">
+(function(){
+const KEY='digital_file_bundles_v1';let currentNo='';let selected=new Set();
+function db(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}}
+function sb(x){localStorage.setItem(KEY,JSON.stringify(x))}
+function esc(v){return String(v==null?'':v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+window.openBundleFromToolbar=function(){const e=document.getElementById('bundleOfficeInput'),n=e?e.value.trim():'';if(!n){alert('முதலில் முதன்மை கோப்பு எண்ணை உள்ளிடவும்.');return}openDigitalBundle(n)};
+window.openDigitalBundle=function(no){currentNo=String(no||'').trim();selected=new Set(db()[currentNo.toLowerCase()]||[]);const f=typeof getFileSafely==='function'?getFileSafely(currentNo):null;const c=document.getElementById('bundleCurrentFile');if(c)c.innerHTML='<strong>📂 முதன்மை கோப்பு:</strong> '+esc((f&&f.officeNo)||currentNo)+(f&&f.subject?'<br><span>'+esc(f.subject)+'</span>':'');const m=document.getElementById('digitalBundleModal');if(m)m.style.display='flex';renderBundleCandidates();renderBundleSelection();const q=document.getElementById('bundleSearchInput');if(q){q.value='';q.focus()}};
+window.closeDigitalBundle=function(){const m=document.getElementById('digitalBundleModal');if(m)m.style.display='none';currentNo='';selected=new Set()};
+window.renderBundleCandidates=function(){const b=document.getElementById('bundleCandidateList');if(!b)return;let a=typeof memoryFiles!=='undefined'&&Array.isArray(memoryFiles)?memoryFiles.slice():[];const q=String((document.getElementById('bundleSearchInput')||{}).value||'').trim().toLowerCase();a=a.filter(f=>String(f.officeNo||'').trim().toLowerCase()!==currentNo.toLowerCase());if(q)a=a.filter(f=>[f.officeNo,f.schoolId,f.schoolName,f.subject,f.prevRefNo].some(v=>String(v||'').toLowerCase().includes(q)));if(!a.length){b.innerHTML='<div class="bundle-empty">தொடர்புடைய கோப்புகள் இல்லை.</div>';return}b.innerHTML=a.slice(0,100).map(f=>{const n=String(f.officeNo||''),on=selected.has(n);return '<div class="bundle-item '+(on?'bundle-selected':'')+'" onclick="toggleBundleFile('+JSON.stringify(n)+')"><div class="bundle-item-main"><strong>📄 '+esc(n)+'</strong><span>'+esc(f.schoolName||f.schoolId||'')+(f.subject?' • '+esc(f.subject):'')+'</span></div><span>'+ (on?'☑️':'⬜') +'</span></div>'}).join('')};
+window.toggleBundleFile=function(n){n=String(n);if(selected.has(n))selected.delete(n);else selected.add(n);renderBundleCandidates();renderBundleSelection()};
+window.renderBundleSelection=function(){const e=document.getElementById('bundleSelectedInfo');if(!e)return;const a=Array.from(selected);e.innerHTML=a.length?'<strong>இணைக்க தேர்வு:</strong><br>'+a.map(n=>'<span class="bundle-chip">📄 '+esc(n)+'</span>').join(''):'<span style="font-size:.74rem;color:#64748b">கோப்புகளை தேர்வு செய்யவும்.</span>'};
+window.saveDigitalBundle=function(){if(!currentNo)return;const s=db(),k=currentNo.toLowerCase(),old=Array.isArray(s[k])?s[k]:[];s[k]=Array.from(new Set(old.concat(Array.from(selected)))).filter(n=>String(n).toLowerCase()!==k);sb(s);alert('📦 Digital Bundle சேமிக்கப்பட்டது.');closeDigitalBundle()};
+window.getDigitalBundle=function(n){return db()[String(n||'').trim().toLowerCase()]||[]};
+window.removeFromDigitalBundle=function(n,r){const s=db(),k=String(n||'').trim().toLowerCase();s[k]=(s[k]||[]).filter(x=>String(x).toLowerCase()!==String(r).toLowerCase());sb(s)};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDigitalBundle()});
+})();
+</script>
 </body>
 </html>
