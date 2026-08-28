@@ -3058,7 +3058,13 @@ function toggleAdminTool(id){
     });
   }
 
-  document.addEventListener("DOMContentLoaded", openQRStatusPage);
+  document.addEventListener("DOMContentLoaded", function () {
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.has("fileStatus")) {
+    openQRStatusPage();
+  }
+});
 
 
 /* ============================================================
