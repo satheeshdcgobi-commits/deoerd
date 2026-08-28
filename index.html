@@ -895,11 +895,11 @@
     </div>
     <div class="form-group">
       <label>School JA WhatsApp No (91 உடன்):</label>
-      <input type="text" id="contactJaWhatsappInput" placeholder="எ.கா. 919443000001">
+      <input type="text" id="contactJaWhatsappInput" placeholder="எ.கா. 919876543210">
     </div>
     <div class="form-group">
       <label>School HM WhatsApp No (91 உடன்):</label>
-      <input type="text" id="contactHmWhatsappInput" placeholder="எ.கா. 919443000011">
+      <input type="text" id="contactHmWhatsappInput" placeholder="எ.கா. 919876543211">
     </div>
     <div style="display:flex; gap:10px; margin-top:15px;">
       <button onclick="saveContactDetails()" class="btn" style="flex:1;">சேமி</button>
@@ -938,7 +938,7 @@
 <script>
   const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwa8JJiVDgxqV3h3FPYelHedAWIVjIlqRKtvU7jQCHLtMty7UpHQD7IVnFI_m8HDd76XQ/exec";
 
-  // இந்திய உள்ளூர் தேதியை சரியாக வழங்கும் முறை
+  // நேர மாற்றம் காரணமாக நாள் மாறுவதைத் தவிர்க்க முறையான உள்ளூர் தேதியைப் பெறுதல்
   function getLocalDateString() {
     const d = new Date();
     const year = d.getFullYear();
