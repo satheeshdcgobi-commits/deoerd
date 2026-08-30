@@ -414,7 +414,7 @@
       </div>
     </div>
     
-      <div id="schoolLoginStatusPanel" class="admin-section-card">
+      <div id="schoolLoginStatusPanel" class="admin-section-card" style="display:none;">
         <div class="admin-section-head">
           <div>
             <h4>🟢 பள்ளிகளின் கடைசி Login</h4>
@@ -1146,7 +1146,12 @@
     if (schoolStickyNoteSection) schoolStickyNoteSection.style.display = !isAdmin ? 'block' : 'none';
     if (isAdmin) {
       populateAdminSchoolDropdown();
+      const loginPanel = document.getElementById("schoolLoginStatusPanel");
+      if (loginPanel) loginPanel.style.display = "block";
       loadSchoolLoginStatus();
+      loadSchoolLoginStatus();
+    const schoolLoginPanel = document.getElementById("schoolLoginStatusPanel");
+    if (schoolLoginPanel) schoolLoginPanel.style.display = "none";
     } else {
       loadSchoolStickyCircular(currentUser);
     }
@@ -2521,19 +2526,19 @@ function populateAdminSchoolDropdown() {
 .sticker-header{text-align:center;font-weight:700;line-height:1.35;margin-bottom:8px}
 .sticker-header-main{font-size:14pt}
 .sticker-header-sub{font-size:12.5pt;margin-top:2px}
-.sticker-top-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:10px;margin-bottom:14px;font-weight:700}
+.sticker-top-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px;margin-bottom:8px;font-weight:700}
 .sticker-top-left{text-align:left}
 .sticker-top-right{text-align:right}
-.sticker-body{display:grid;grid-template-columns:minmax(0,1fr) 145px;gap:24px;align-items:center;margin-top:4px;min-height:170px}
-.sticker-fields{padding-right:8px}
-.sticker-fields div{margin:11px 0;display:flex;gap:8px;align-items:flex-start}
+.sticker-body{display:grid;grid-template-columns:minmax(0,1fr) 145px;gap:18px;align-items:start;margin-top:2px;min-height:0}
+.sticker-fields{padding-right:8px;padding-top:0}
+.sticker-fields div{margin:5px 0;display:flex;gap:7px;align-items:flex-start}
 .sticker-label{font-weight:700;white-space:nowrap}
 .sticker-value{font-weight:600;word-break:break-word}
 .sticker-qr-box{width:132px;height:132px;border:1px solid #111827;display:flex;justify-content:center;align-items:center;background:#fff;margin:auto}
 .sticker-qr-box img,.sticker-qr-box canvas{width:120px!important;height:120px!important}
 .sticker-qr-caption{text-align:center;font-weight:700;font-size:9pt;margin-top:4px}
 @media(max-width:600px){
-  .sticker-top-row{grid-template-columns:1fr;gap:4px}
+  .sticker-top-row{grid-template-columns:1fr;gap:3px}
   .sticker-top-right{text-align:left}
   .sticker-body{grid-template-columns:1fr;gap:12px}
   .sticker-qr-box{order:2}
@@ -2570,22 +2575,31 @@ function toggleAdminTool(id){
           <div style="text-align:center;padding:35px 10px;color:#64748b;">☁️ Google Cloud தகவல் ஏற்றப்படுகிறது...</div>
         </div>
       </div>`;
-    const api = GOOGLE_SHEET_API_URL +
-      "?action=file_status&officeNo=" +
-      encodeURIComponent(officeNo);
+    const api = GOOGLE_SHEET_API_URL + "?t=" + Date.now();
     fetch(api, { cache: "no-store" })
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error("Cloud HTTP " + r.status);
+        return r.json();
+      })
       .then(data => {
         const card = document.getElementById("qrLiveCard");
         if (!card) return;
-        if (!data || data.status !== "success" || !data.file) {
+
+        const target = String(officeNo).trim().toLowerCase();
+        const allFiles = Array.isArray(data && data.files) ? data.files : [];
+        const matchedFile = allFiles.find(f =>
+          f && String(f.officeNo || "").trim().toLowerCase() === target
+        );
+
+        const fileData = matchedFile || null;
+        if (!fileData) {
           card.innerHTML = `
             <div style="text-align:center;font-size:1.25rem;font-weight:800;color:#b91c1c;">❌ கோப்பு கிடைக்கவில்லை</div>
             <div style="text-align:center;margin-top:10px;color:#64748b;">கோப்பு எண்: <b>${escapeHtmlQR(officeNo)}</b></div>
             <div style="text-align:center;margin-top:22px;"><button onclick="location.href='/'" style="border:0;border-radius:10px;padding:10px 16px;background:#0c4a6e;color:#fff;cursor:pointer;">முகப்புக்குச் செல்ல</button></div>`;
           return;
         }
-        const f = data.file;
+        const f = fileData;
         const schoolName =
           (typeof SCHOOL_NAMES !== "undefined" && SCHOOL_NAMES[f.schoolId])
             ? SCHOOL_NAMES[f.schoolId]
@@ -2605,11 +2619,12 @@ function toggleAdminTool(id){
           <div style="margin-top:16px;text-align:center;font-size:.72rem;color:#94a3b8;">கடைசி புதுப்பிப்பு: ${escapeHtmlQR(f.updatedAt || "-")}</div>
         `;
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("QR status load failed:", err);
         const card = document.getElementById("qrLiveCard");
         if (card) card.innerHTML = `
           <div style="text-align:center;font-size:1.2rem;font-weight:800;color:#b91c1c;">⚠️ Cloud தகவலைப் பெற முடியவில்லை</div>
-          <div style="text-align:center;margin-top:10px;color:#64748b;">Internet connection சரிபார்க்கவும்.</div>`;
+          <div style="text-align:center;margin-top:10px;color:#64748b;">Internet connection / Google Cloud connection சரிபார்க்கவும்.</div>`;
       });
   }
   function escapeHtmlQR(value) {
@@ -2663,7 +2678,7 @@ function updateStickerPreview(){
   const box=document.getElementById("stickerPreview");
   if(!file||!box)return;
   const school=(typeof SCHOOL_NAMES!=="undefined"&&SCHOOL_NAMES[file.schoolId])?SCHOOL_NAMES[file.schoolId]:(file.schoolId||"");
-  const qrURL="https://satheeshdcgobi-commits.github.io/deoerd/?fileStatus="+encodeURIComponent(String(file.officeNo));
+  const qrURL=new URL(window.location.pathname+"?fileStatus="+encodeURIComponent(String(file.officeNo)),window.location.href).href;
   box.style.maxWidth="900px";
   box.innerHTML=`
     <div class="sticker-header">
@@ -2671,14 +2686,12 @@ function updateStickerPreview(){
       <div class="sticker-header-sub">(இடைநிலை) ஈரோடு</div>
     </div>
     <div class="sticker-top-row">
-      <div class="sticker-top-left">பிரிவு: அ2</div>
-      <div class="sticker-top-right">
-        <div>கோப்பு எண்: ${escapeSticker(file.officeNo)}</div>
-        <div style="margin-top:3px;">நாள்: ${escapeSticker(formatTamilDate(file.officeDate))}</div>
-      </div>
+      <div class="sticker-top-left">கோப்பு எண்: ${escapeSticker(file.officeNo)}</div>
+      <div class="sticker-top-right">நாள்: ${escapeSticker(formatTamilDate(file.officeDate))}</div>
     </div>
     <div class="sticker-body">
       <div class="sticker-fields">
+        <div class="sticker-division-line"><span class="sticker-label">பிரிவு:</span><span class="sticker-value">அ2</span></div>
         <div><span class="sticker-label">பள்ளியின் பெயர்:</span><span class="sticker-value">${escapeSticker(school)}</span></div>
         <div><span class="sticker-label">கோரிக்கை:</span><span class="sticker-value">${escapeSticker(file.category||"")}</span></div>
         <div><span class="sticker-label">கோரிக்கை விவரம்:</span><span class="sticker-value">${escapeSticker(file.subject||"")}</span></div>
@@ -2724,10 +2737,10 @@ function printFileSticker(){
       font-family:'TAU-Marutham','TAU Marutham','Marutham','Noto Sans Tamil',serif;font-size:12pt;line-height:1.45;color:#111}
     .sticker-header{text-align:center;font-weight:700;line-height:1.35;margin-bottom:8px}
     .sticker-header-main{font-size:14pt}.sticker-header-sub{font-size:12.5pt;margin-top:2px}
-    .sticker-top-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:10px;margin-bottom:14px;font-weight:700}
+    .sticker-top-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px;margin-bottom:8px;font-weight:700}
     .sticker-top-left{text-align:left}.sticker-top-right{text-align:right}
-    .sticker-body{display:grid;grid-template-columns:minmax(0,1fr) 145px;gap:24px;align-items:center;margin-top:4px;min-height:170px}
-    .sticker-fields{padding-right:8px}.sticker-fields div{margin:11px 0;display:flex;gap:8px;align-items:flex-start}
+    .sticker-body{display:grid;grid-template-columns:minmax(0,1fr) 145px;gap:18px;align-items:start;margin-top:2px;min-height:0}
+    .sticker-fields{padding-right:8px;padding-top:0}.sticker-fields div{margin:5px 0;display:flex;gap:7px;align-items:flex-start}
     .sticker-label{font-weight:700;white-space:nowrap}.sticker-value{font-weight:600;word-break:break-word}
     .sticker-qr-box{width:132px;height:132px;border:1px solid #111827;display:flex;justify-content:center;align-items:center;background:#fff;margin:auto}
     .sticker-qr-box img{width:120px!important;height:120px!important}.sticker-qr-caption{text-align:center;font-weight:700;font-size:9pt;margin-top:4px}
