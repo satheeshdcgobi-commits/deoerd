@@ -1149,10 +1149,9 @@
       const loginPanel = document.getElementById("schoolLoginStatusPanel");
       if (loginPanel) loginPanel.style.display = "block";
       loadSchoolLoginStatus();
-      loadSchoolLoginStatus();
-    const schoolLoginPanel = document.getElementById("schoolLoginStatusPanel");
-    if (schoolLoginPanel) schoolLoginPanel.style.display = "none";
     } else {
+      const schoolLoginPanel = document.getElementById("schoolLoginStatusPanel");
+      if (schoolLoginPanel) schoolLoginPanel.style.display = "none";
       loadSchoolStickyCircular(currentUser);
     }
     const entryOfficeDate = document.getElementById('entryOfficeDate');
