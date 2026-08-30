@@ -413,7 +413,32 @@
         </div>
       </div>
     </div>
-    <!-- பள்ளி செயல்பாட்டு மதிப்பீட்டு அட்டை -->
+    
+      <div id="schoolLoginStatusPanel" class="admin-section-card">
+        <div class="admin-section-head">
+          <div>
+            <h4>🟢 பள்ளிகளின் கடைசி Login</h4>
+            <p>ஒவ்வொரு பள்ளியும் கடைசியாக உள்நுழைந்த தேதி மற்றும் நேரம்</p>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="loadSchoolLoginStatus()">🔄 Refresh</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>பள்ளி</th>
+                <th>கடைசி Login</th>
+                <th>நிலை</th>
+              </tr>
+            </thead>
+            <tbody id="schoolLoginStatusBody">
+              <tr><td colspan="3" style="text-align:center;">Login விவரம் பெறப்படுகிறது...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+<!-- பள்ளி செயல்பாட்டு மதிப்பீட்டு அட்டை -->
     <div id="scorecardSection" class="card" style="display: none; border-left: 6px solid #0284c7; background: #f8fafc;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <h3 style="margin:0; color:#0369a1;">📊 பள்ளி வாரியான செயல்பாட்டு மதிப்பீட்டு அட்டை (School Compliance & Performance Scorecard)</h3>
@@ -1064,6 +1089,7 @@
       if (dashSec) dashSec.style.display = 'block';
       if (actions) actions.style.display = 'flex';
       document.getElementById('passwordInput').value = '';
+      if (user !== "ADMIN") recordSchoolLogin(user);
       setupDashboard();
     } else {
       alert("தவறான கடவுச்சொல்! சரியான கடவுச்சொல்லை உள்ளிடவும்.");
@@ -1120,6 +1146,7 @@
     if (schoolStickyNoteSection) schoolStickyNoteSection.style.display = !isAdmin ? 'block' : 'none';
     if (isAdmin) {
       populateAdminSchoolDropdown();
+      loadSchoolLoginStatus();
     } else {
       loadSchoolStickyCircular(currentUser);
     }
@@ -2704,12 +2731,77 @@ function printFileSticker(){
     .sticker-label{font-weight:700;white-space:nowrap}.sticker-value{font-weight:600;word-break:break-word}
     .sticker-qr-box{width:132px;height:132px;border:1px solid #111827;display:flex;justify-content:center;align-items:center;background:#fff;margin:auto}
     .sticker-qr-box img{width:120px!important;height:120px!important}.sticker-qr-caption{text-align:center;font-weight:700;font-size:9pt;margin-top:4px}
-  </style></head><body>
+  </style>
+<style id="school-login-status-style">
+.admin-section-card{margin-top:15px;padding:14px;border:1px solid var(--border);border-radius:12px;background:#fff}
+.admin-section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.admin-section-head h4{margin:0;color:var(--gov-dark)}
+.admin-section-head p{margin:3px 0 0;color:#64748b;font-size:.78rem}
+</style>
+</head><body>
   ${clone.outerHTML}
   <script>window.onload=function(){setTimeout(function(){window.print();},350);};<\/script>
   </body></html>`);
   w.document.close();
 }
+
+  // ===== பள்ளிகளின் கடைசி Login =====
+  async function recordSchoolLogin(schoolId) {
+    if (!schoolId || schoolId === "ADMIN") return;
+    try {
+      await postToCloud("school_login", {
+        schoolId: schoolId,
+        loginAt: new Date().toISOString()
+      });
+    } catch (e) {
+      console.warn("LoginLog:", e);
+    }
+  }
+
+  function schoolLoginDate(value) {
+    if (!value) return "இதுவரை Login இல்லை";
+    var d = new Date(value);
+    if (isNaN(d.getTime())) return String(value);
+    return d.toLocaleString("ta-IN", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    });
+  }
+
+  async function loadSchoolLoginStatus() {
+    var body = document.getElementById("schoolLoginStatusBody");
+    if (!body || currentUser !== "ADMIN") return;
+
+    body.innerHTML = '<tr><td colspan="3" style="text-align:center;">Login விவரம் பெறப்படுகிறது...</td></tr>';
+
+    try {
+      var response = await fetch(GOOGLE_SHEET_API_URL + "?view=login_status&_=" + Date.now());
+      var result = await response.json();
+      var logs = result.loginStatus || {};
+
+      body.innerHTML = Object.keys(SCHOOL_NAMES).map(function(id) {
+        var last = logs[id] || "";
+        var time = last ? new Date(last).getTime() : NaN;
+        var recent = !isNaN(time) && (Date.now() - time <= 15 * 60 * 1000);
+
+        return "<tr>" +
+          "<td><b>" + SCHOOL_NAMES[id] + "</b></td>" +
+          "<td>" + (last ? schoolLoginDate(last) : "இதுவரை Login இல்லை") + "</td>" +
+          "<td>" + (recent ? "🟢 சமீபத்தில் Login" : (last ? "⚪ கடைசி Login" : "🟡 பதிவு இல்லை")) + "</td>" +
+        "</tr>";
+      }).join("");
+    } catch (e) {
+      body.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#dc2626;">Login விவரத்தை பெற முடியவில்லை</td></tr>';
+      console.warn("Login status:", e);
+    }
+  }
+  // ===== End Login Status =====
+
 </script>
 <!-- 🏷️ Sticker Options -->
 <div id="stickerOptionsModal" class="modal" style="display:none;">
