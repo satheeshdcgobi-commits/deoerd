@@ -1202,24 +1202,16 @@ onclick="saveAdminSchoolCircular()">📤 சுற்றறிக்கையை
     </div>
 
     
-      <div id="schoolLoginStatusPanel" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
-          <div>
-            <h4 style="margin:0;color:var(--gov-dark);">🟢 பள்ளிகளின் கடைசி Login</h4>
-            <small style="color:#64748b;">ஒவ்வொரு பள்ளியும் கடைசியாக உள்நுழைந்த தேதி மற்றும் நேரம்</small>
-          </div>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="loadSchoolLoginStatus()">🔄 Refresh</button>
-        </div>
-        <div style="overflow-x:auto;margin-top:10px;">
-          <table>
-            <thead><tr><th>பள்ளி</th><th>கடைசி Login</th><th>நிலை</th></tr></thead>
-            <tbody id="schoolLoginStatusBody">
-              <tr><td colspan="3" style="text-align:center;color:#64748b;">Login விவரம் பெறப்படுகிறது...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+      <div id="schoolLoginStatusPanel" style="margin-top:15px;padding:14px;border:1px solid var(--border);border-radius:12px;background:#fff;">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+<div><h4 style="margin:0;color:var(--gov-dark);">🟢 பள்ளிகளின் கடைசி Login</h4><small style="color:#64748b;">பள்ளிகள் கடைசியாக உள்நுழைந்த தேதி மற்றும் நேரம்</small></div>
+<button type="button" class="btn btn-secondary btn-sm" onclick="loadSchoolLoginStatus()">🔄 Refresh</button>
+</div>
+<div style="overflow-x:auto;margin-top:10px;"><table>
+<thead><tr><th>பள்ளி</th><th>கடைசி Login</th><th>நிலை</th></tr></thead>
+<tbody id="schoolLoginStatusBody"><tr><td colspan="3" style="text-align:center;">Login விவரம் பெறப்படுகிறது...</td></tr></tbody>
+</table></div>
+</div>
 
 <!-- பள்ளி செயல்பாட்டு மதிப்பீட்டு அட்டை -->
 
@@ -3230,6 +3222,7 @@ document.getElementById('passwordInput').value = '';
 
      
 if (user !== "ADMIN") { recordSchoolLogin(user); }
+      if(user!=="ADMIN")recordSchoolLogin(user);
       setupDashboard();
 
     } else {
@@ -3281,19 +3274,6 @@ schoolStickyNoteSection = document.getElementById('schoolStickyNoteSection');
 
   }
 
-  
-  async function recordSchoolLogin(schoolId) {
-    if (!schoolId || schoolId === "ADMIN") return;
-    try {
-      await postToCloud("school_login", {
-        schoolId: schoolId,
-        loginAt: new Date().toISOString()
-      });
-    } catch (e) {
-      console.warn("School login பதிவு தோல்வி:", e);
-    }
-  }
-
   function formatSchoolLoginTime(value) {
     if (!value) return "இதுவரை Login இல்லை";
     const d = new Date(value);
@@ -3307,39 +3287,6 @@ schoolStickyNoteSection = document.getElementById('schoolStickyNoteSection');
       minute: "2-digit",
       hour12: true
     });
-  }
-
-  async function loadSchoolLoginStatus() {
-    const body = document.getElementById("schoolLoginStatusBody");
-    if (!body || currentUser !== "ADMIN") return;
-
-    body.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#64748b;">Login விவரம் பெறப்படுகிறது...</td></tr>';
-
-    try {
-      const response = await fetch(GOOGLE_SHEET_API_URL + "?view=login_status&_=" + Date.now());
-      const data = await response.json();
-      const loginStatus = data.loginStatus || {};
-
-      body.innerHTML = Object.keys(SCHOOL_NAMES).map(function(id) {
-        const last = loginStatus[id] || "";
-        const ms = last ? new Date(last).getTime() : NaN;
-        const recent = !isNaN(ms) && (Date.now() - ms <= 15 * 60 * 1000);
-
-        return '<tr>' +
-          '<td><b>' + SCHOOL_NAMES[id] + '</b></td>' +
-          '<td>' + (last ? formatSchoolLoginTime(last) : '<span style="color:#94a3b8;">இதுவரை Login இல்லை</span>') + '</td>' +
-          '<td>' +
-          (recent
-            ? '<span class="badge badge-completed">🟢 சமீபத்தில் Login</span>'
-            : (last
-              ? '<span class="badge" style="background:#f1f5f9;color:#475569;">⚪ கடைசி Login</span>'
-              : '<span class="badge" style="background:#fef3c7;color:#92400e;">🟡 பதிவு இல்லை</span>')) +
-          '</td></tr>';
-      }).join("");
-    } catch (e) {
-      body.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#dc2626;">Login விவரத்தை பெற முடியவில்லை. Refresh செய்து பார்க்கவும்.</td></tr>';
-      console.warn("Login status load failed:", e);
-    }
   }
 
 function
@@ -3457,8 +3404,7 @@ handoverBtn.style.display = isAdmin ? 'inline-block' : 'none';
 
       populateAdminSchoolDropdown();
       loadSchoolLoginStatus();
-
-    } else {
+} else {
 
      
 loadSchoolStickyCircular(currentUser);
@@ -8062,6 +8008,32 @@ img{width:120px!important;height:120px!important}.sticker-qr-caption{text-align:
 
 }
 
+
+async function recordSchoolLogin(schoolId){
+  if(!schoolId||schoolId==="ADMIN")return;
+  try{await postToCloud("school_login",{schoolId:schoolId,loginAt:new Date().toISOString()});}
+  catch(e){console.warn("LoginLog:",e);}
+}
+function schoolLoginDate(value){
+  if(!value)return"இதுவரை Login இல்லை";
+  var d=new Date(value); if(isNaN(d.getTime()))return String(value);
+  return d.toLocaleString("ta-IN",{timeZone:"Asia/Kolkata",day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:true});
+}
+async function loadSchoolLoginStatus(){
+  var body=document.getElementById("schoolLoginStatusBody");
+  if(!body||currentUser!=="ADMIN")return;
+  try{
+    var r=await fetch(GOOGLE_SHEET_API_URL+"?view=login_status&_="+Date.now());
+    var x=await r.json(), logs=x.loginStatus||{};
+    body.innerHTML=Object.keys(SCHOOL_NAMES).map(function(id){
+      var last=logs[id]||"", t=last?new Date(last).getTime():NaN;
+      var recent=!isNaN(t)&&(Date.now()-t<=900000);
+      return "<tr><td><b>"+SCHOOL_NAMES[id]+"</b></td><td>"+(last?schoolLoginDate(last):"இதுவரை Login இல்லை")+"</td><td>"+(recent?"🟢 சமீபத்தில் Login":(last?"⚪ கடைசி Login":"🟡 பதிவு இல்லை"))+"</td></tr>";
+    }).join("");
+  }catch(e){
+    body.innerHTML='<tr><td colspan="3" style="text-align:center;color:#dc2626;">Login விவரத்தை பெற முடியவில்லை</td></tr>';
+  }
+}
 </script>
 
 <!-- 🏷️ Sticker Options
