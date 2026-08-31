@@ -1772,6 +1772,17 @@ function populateAdminSchoolDropdown() {
         });
       } catch (err) {}
     }
+    // Reload from Google Cloud so any uploaded final-order Drive URL is reflected
+    // in the live QR immediately after saving.
+    try {
+      const latest = await fetch(GOOGLE_SHEET_API_URL + "?t=" + Date.now(), { cache: "no-store" }).then(r => r.json());
+      if (latest && Array.isArray(latest.files)) {
+        memoryFiles = latest.files;
+        saveLocalFiles(memoryFiles);
+        const fresh = latest.files.find(x => String(x.officeNo || "").trim().toLowerCase() === String(officeNo).trim().toLowerCase());
+        if (fresh) Object.assign(file, fresh);
+      }
+    } catch (refreshErr) {}
     closeStatusModal();
     renderDashboard();
     updateCharts();
@@ -2655,7 +2666,7 @@ function toggleAdminTool(id){
               ${mmuNo ? `<div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>மூ.மு. எண்</b><br>${escapeHtmlQR(mmuNo)}</div>` : ""}
               ${mmuDate ? `<div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>நாள்</b><br>${escapeHtmlQR(mmuDate)}</div>` : ""}
               ${dispatch ? `<div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>📤 தபால் அனுப்பப்பட்ட தேதி</b><br>${escapeHtmlQR(dispatch)}</div>` : ""}
-              ${attachment ? `<div style="text-align:center;padding:12px;"><a href="${attachment}" download="Final_Order_${encodeURIComponent(f.officeNo||"file")}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 16px;border-radius:10px;background:#0c4a6e;color:#fff;text-decoration:none;font-weight:800;">⬇️ இறுதி ஆணை / கடிதம் Download</a></div>` : ""}
+              ${attachment ? `<div style="text-align:center;padding:12px;"><a href="${escapeHtmlQR(attachment)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:10px;background:#0c4a6e;color:#fff;text-decoration:none;font-weight:800;padding:11px 16px;">⬇️ இறுதி ஆணை / கடிதம் Download</a></div>` : ""}
             </div>`;
         } else {
           card.innerHTML=`
