@@ -439,38 +439,7 @@
       </div>
 
 
-      <div id="advancedFileMonitoringPanel" class="admin-section-card" style="display:none;margin-top:15px;">
-        <div class="admin-section-head">
-          <div>
-            <h4>📊 கோப்பு கண்காணிப்பு மையம்</h4>
-            <p>Timeline · SLA Alert · Follow-up Queue · Stale Files</p>
-          </div>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="refreshAdvancedFileMonitoring()">🔄 Refresh</button>
-        </div>
-
-        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px;">
-          <div class="monitor-card monitor-red"><b>🚨 SLA Alert</b><strong id="monitorSlaCount">0</strong><span>அவசரம் / காலாவதி</span></div>
-          <div class="monitor-card monitor-orange"><b>📌 Follow-up</b><strong id="monitorFollowupCount">0</strong><span>தொடர்பு கொள்ள வேண்டியவை</span></div>
-          <div class="monitor-card monitor-gray"><b>🕒 Stale Files</b><strong id="monitorStaleCount">0</strong><span>நகராத கோப்புகள்</span></div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div class="monitor-list-card">
-            <h5>🚨 SLA Breach Alert</h5>
-            <div id="monitorSlaList"></div>
-          </div>
-          <div class="monitor-list-card">
-            <h5>📌 Follow-up Queue</h5>
-            <div id="monitorFollowupList"></div>
-          </div>
-          <div class="monitor-list-card" style="grid-column:1/-1;">
-            <h5>🕒 Stale File Detection</h5>
-            <div id="monitorStaleList"></div>
-          </div>
-        </div>
-      </div>
-
-<!-- பள்ளி செயல்பாட்டு மதிப்பீட்டு அட்டை -->
+      <!-- பள்ளி செயல்பாட்டு மதிப்பீட்டு அட்டை -->
     <div id="scorecardSection" class="card" style="display: none; border-left: 6px solid #0284c7; background: #f8fafc;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <h3 style="margin:0; color:#0369a1;">📊 பள்ளி வாரியான செயல்பாட்டு மதிப்பீட்டு அட்டை (School Compliance & Performance Scorecard)</h3>
@@ -829,6 +798,12 @@
         <option value="பரிசீலனையில்">பரிசீலனையில் (In Progress)</option>
       </select>
     </div>
+    <div class="form-group" id="terminalOfficeInfo" style="display:none; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #cbd5e1;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><label style="font-weight:bold;">அலுவலக எண்:</label><input type="text" id="modalOfficeNumberDisplay" readonly></div>
+        <div><label style="font-weight:bold;">நாள்:</label><input type="text" id="modalOfficeDateDisplay" readonly></div>
+      </div>
+    </div>
     <!-- திருப்பப்பட்டது / நிராகரிக்கப்பட்டால் தபால் அனுப்பிய தேதி -->
     <div class="form-group" id="dispatchDateGroup" style="display:none; background:#f0fdf4; padding:10px; border-radius:8px; border:1px solid #bbf7d0;">
       <label style="color:#166534; font-weight:bold;">📤 தபால் அனுப்பிய தேதி (Dispatch Date):</label>
@@ -847,17 +822,13 @@
         <input type="date" id="modalAgReturnDispatchDate">
       </div>
     </div>
-    <div class="form-group">
-      <label>இறுதி ஆணை / கடித இணைப்பு (PDF / படம் - பள்ளிகள் டவுன்லோட் செய்ய):</label>
-      <input type="file" id="modalDeoAttachment" accept="image/*,application/pdf" style="padding:6px;">
-    </div>
-    <div class="form-group">
+    <div class="form-group" id="docketDateGroup">
       <label>மறுபரிசீலனை நினைவூட்டல் தேதி (Docket / Follow-up Date):</label>
       <input type="date" id="modalDocketDate">
     </div>
     <div class="form-group">
-      <label>குறிப்பு (Remarks):</label>
-      <textarea id="modalRemark" rows="2" placeholder="குறிப்புகளை உள்ளிடவும்..."></textarea>
+      <label>இறுதி ஆணை / கடித இணைப்பு (PDF / படம் - பள்ளிகள் டவுன்லோட் செய்ய):</label>
+      <input type="file" id="modalDeoAttachment" accept="image/*,application/pdf" style="padding:6px;">
     </div>
     <div style="display:flex; gap:10px; margin-top:15px;">
       <button onclick="saveStatusUpdate()" id="updateStatusBtn" class="btn" style="flex:1;">புதுப்பி (Update)</button>
@@ -1181,14 +1152,9 @@
       const loginPanel = document.getElementById("schoolLoginStatusPanel");
       if (loginPanel) loginPanel.style.display = "block";
       loadSchoolLoginStatus();
-      const monitorPanel = document.getElementById("advancedFileMonitoringPanel");
-      if (monitorPanel) monitorPanel.style.display = "block";
-      refreshAdvancedFileMonitoring();
     } else {
       const schoolLoginPanel = document.getElementById("schoolLoginStatusPanel");
       if (schoolLoginPanel) schoolLoginPanel.style.display = "none";
-      const monitorPanelSchool = document.getElementById("advancedFileMonitoringPanel");
-      if (monitorPanelSchool) monitorPanelSchool.style.display = "none";
       loadSchoolStickyCircular(currentUser);
     }
     const entryOfficeDate = document.getElementById('entryOfficeDate');
@@ -1612,12 +1578,12 @@ function populateAdminSchoolDropdown() {
   }
   async function deleteFile(officeNo) {
     const file=getFileSafely(officeNo); if(!file)return;
-    if(!confirm(`கோப்பு எண்: ${officeNo} - ஐ நிரந்தரமாக அழிக்காமல் பாதுகாப்புக் காப்பகத்திற்கு மாற்றவா?`))return;
-    file.archived=true; file.deleted=true; stampUpdated(file);
-    let archives=getArchivedFiles().filter(f=>String(f.officeNo).trim().toLowerCase()!==String(officeNo).trim().toLowerCase()); archives.unshift(file); saveArchivedFiles(archives);
-    memoryFiles=memoryFiles.filter(f=>String(f.officeNo).trim().toLowerCase()!==String(officeNo).trim().toLowerCase()); saveLocalFiles(memoryFiles);
-    await postToCloud('delete',{officeNo}); renderDashboard(); updateCharts();
-    alert('கோப்பு அழிக்கப்படவில்லை. பாதுகாப்புக் காப்பகத்தில் முழு வரலாற்றுடன் சேமிக்கப்பட்டுள்ளது.');
+    if(!confirm(`கோப்பு எண்: ${officeNo} - ஐ முழுமையாக நீக்கவா?\n\nஇந்த கோப்பு பட்டியல் மற்றும் உள்ளூர் சேமிப்பிலிருந்து நீக்கப்படும்.`))return;
+    memoryFiles=memoryFiles.filter(f=>String(f.officeNo).trim().toLowerCase()!==String(officeNo).trim().toLowerCase());
+    saveLocalFiles(memoryFiles);
+    try { await postToCloud('delete',{officeNo}); } catch(e) { console.warn('Delete cloud:',e); }
+    renderDashboard(); updateCharts();
+    alert(`கோப்பு எண்: ${officeNo} முழுமையாக நீக்கப்பட்டது.`);
   }
   async function togglePinFile(officeNo) {
     const file = getFileSafely(officeNo);
@@ -1646,11 +1612,12 @@ function populateAdminSchoolDropdown() {
     document.getElementById('modalOfficeNo').value = file.officeNo;
     document.getElementById('modalCurrentWith').value = file.currentWith || "பிரிவு எழுத்தர் (Section Assistant)";
     document.getElementById('modalDocketDate').value = file.docketDate || '';
+    document.getElementById('modalOfficeNumberDisplay').value = file.officeNo || '';
+    document.getElementById('modalOfficeDateDisplay').value = file.officeDate || '';
     document.getElementById('modalDispatchDate').value = file.dispatchDate || '';
     document.getElementById('modalPostTrackId').value = file.postTrackId || '';
     document.getElementById('modalAgDispatchDate').value = file.dispatchDate || '';
     document.getElementById('modalAgReturnDispatchDate').value = file.dispatchDate || '';
-    document.getElementById('modalRemark').value = '';
     document.getElementById('modalDeoAttachment').value = '';
     handleOfficerSelection(file.currentWith || "பிரிவு எழுத்தர் (Section Assistant)");
     document.getElementById('modalStatus').value = file.status;
@@ -1692,6 +1659,11 @@ function populateAdminSchoolDropdown() {
     agGroup.style.display = 'none';
     agPostTrackSection.style.display = 'none';
     agDispatchSection.style.display = 'none';
+    const docketGroup = document.getElementById('docketDateGroup');
+    const terminalOfficeInfo = document.getElementById('terminalOfficeInfo');
+    const isTerminal = status === 'முடிவுற்றது' || status === 'திருப்பப்பட்டது' || status === 'நிராகரிக்கப்பட்டது' || status === 'Return';
+    if (docketGroup) docketGroup.style.display = status === 'பரிசீலனையில்' ? 'block' : 'none';
+    if (terminalOfficeInfo) terminalOfficeInfo.style.display = isTerminal ? 'block' : 'none';
     if (officer === "AG OFFICE") {
       agGroup.style.display = 'block';
       if (status === 'பரிசீலனையில்') {
@@ -1724,7 +1696,7 @@ function populateAdminSchoolDropdown() {
     } else if (newStatus === 'திருப்பப்பட்டது' || newStatus === 'நிராகரிக்கப்பட்டது' || newStatus === 'Return') {
       dispatchDate = document.getElementById('modalDispatchDate').value;
     }
-    let remark = document.getElementById('modalRemark').value.trim() || "நிலை புதுப்பிக்கப்பட்டது.";
+    let remark = "நிலை புதுப்பிக்கப்பட்டது.";
     const fileInput = document.getElementById('modalDeoAttachment');
     if (fileInput && fileInput.files.length > 0) {
       const reader = new FileReader();
@@ -2651,8 +2623,7 @@ function toggleAdminTool(id){
               <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>கோரிக்கை விவரம்</b><br>${escapeHtmlQR(f.subject || "-")}</div>
               <div style="padding:13px;border-radius:12px;background:#ecfdf5;border:1px solid #bbf7d0;color:#166534;"><b>🟢 தற்போதைய நிலை</b><br><span style="font-size:1.05rem;font-weight:800;">${escapeHtmlQR(status)}</span></div>
               <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>தற்போது யாரிடம்</b><br>${escapeHtmlQR(f.currentWith || "-")}</div>
-            </div>
-            <div style="margin-top:16px;text-align:center;font-size:.72rem;color:#94a3b8;">கடைசி புதுப்பிப்பு: ${escapeHtmlQR(f.updatedAt || "-")}</div>`;
+            </div>`;
         }
       })
       .catch((err) => {
@@ -2788,20 +2759,6 @@ function printFileSticker(){
 .admin-section-head p{margin:3px 0 0;color:#64748b;font-size:.78rem}
 </style>
 
-<style id="advanced-file-monitor-style">
-.monitor-card{padding:11px;border-radius:12px;border:1px solid #e2e8f0;background:#f8fafc;display:flex;flex-direction:column;gap:3px}
-.monitor-card strong{font-size:1.35rem}
-.monitor-card span{font-size:.72rem;color:#64748b}
-.monitor-blue{border-left:4px solid #0284c7}.monitor-red{border-left:4px solid #dc2626}.monitor-orange{border-left:4px solid #d97706}.monitor-gray{border-left:4px solid #64748b}
-.monitor-list-card{border:1px solid #e2e8f0;border-radius:12px;padding:11px;background:#fff}
-.monitor-list-card h5{margin:0 0 8px;color:#334155}
-.monitor-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px dashed #e2e8f0}
-.monitor-item:last-child{border-bottom:0}
-.timeline-item{position:relative;padding:0 0 16px 22px;margin-left:7px;border-left:2px solid #cbd5e1}
-.timeline-dot{position:absolute;left:-7px;top:1px;width:11px;height:11px;border-radius:50%;background:#0284c7}
-.timeline-date{font-size:.72rem;color:#64748b}.timeline-stage{font-weight:800;color:#0f172a}.timeline-remark{font-size:.78rem;color:#475569;margin-top:3px}
-@media(max-width:760px){.monitor-card{padding:9px}.monitor-list-card{grid-column:1/-1!important}}
-</style>
 </head><body>
   ${clone.outerHTML}
   <script>window.onload=function(){setTimeout(function(){window.print();},350);};<\/script>
@@ -2865,111 +2822,6 @@ function printFileSticker(){
     }
   }
   // ===== End Login Status =====
-
-
-  // ===== Advanced File Monitoring =====
-  function isTerminalFileStatus(status){
-    return status === "முடிவுற்றது" ||
-           status === "திருப்பப்பட்டது" ||
-           status === "நிராகரிக்கப்பட்டது" ||
-           status === "Return";
-  }
-
-  function getFileLastMovementDate(file){
-    if(file && Array.isArray(file.history) && file.history.length){
-      const last=file.history[file.history.length-1];
-      const d=new Date(last.date);
-      if(!isNaN(d.getTime())) return d;
-    }
-    const d=new Date(file && (file.updatedAt || file.officeDate));
-    return isNaN(d.getTime()) ? new Date() : d;
-  }
-
-  function getFileSlaInfo(file){
-    const days=calculateDaysPending(file.officeDate);
-    const sla=parseInt(file.slaDays,10) || 15;
-    const remaining=sla-days;
-    return {days:days,sla:sla,remaining:remaining};
-  }
-
-  function getAdminOpenFiles(){
-    const files=Array.isArray(memoryFiles) ? memoryFiles : getLocalFiles();
-    return files.filter(function(f){
-      return f && !f.deleted && !f.archived && !isTerminalFileStatus(String(f.status||"").trim());
-    });
-  }
-
-  function refreshAdvancedFileMonitoring(){
-    const panel=document.getElementById("advancedFileMonitoringPanel");
-    if(!panel || currentUser!=="ADMIN") return;
-
-    const files=getAdminOpenFiles();
-    const slaFiles=files.filter(function(f){
-      const x=getFileSlaInfo(f);
-      return x.remaining <= 3;
-    }).sort(function(a,b){ return getFileSlaInfo(a).remaining-getFileSlaInfo(b).remaining; });
-
-    const followupFiles=files.filter(function(f){
-      const x=getFileSlaInfo(f);
-      const last=getFileLastMovementDate(f);
-      const daysSince=Math.floor((Date.now()-last.getTime())/86400000);
-      return x.remaining <= 5 || daysSince >= 3;
-    }).sort(function(a,b){
-      return getFileSlaInfo(a).remaining-getFileSlaInfo(b).remaining;
-    });
-
-    const staleFiles=files.filter(function(f){
-      const last=getFileLastMovementDate(f);
-      const daysSince=Math.floor((Date.now()-last.getTime())/86400000);
-      return daysSince >= 5;
-    }).sort(function(a,b){
-      return getFileLastMovementDate(a)-getFileLastMovementDate(b);
-    });
-
-    const ids={
-        sla:"monitorSlaCount",
-      followup:"monitorFollowupCount",
-      stale:"monitorStaleCount"
-    };
-    document.getElementById(ids.sla).textContent=slaFiles.length;
-    document.getElementById(ids.followup).textContent=followupFiles.length;
-    document.getElementById(ids.stale).textContent=staleFiles.length;
-
-    renderMonitoringList("monitorSlaList",slaFiles,"sla");
-    renderMonitoringList("monitorFollowupList",followupFiles,"followup");
-    renderMonitoringList("monitorStaleList",staleFiles,"stale");
-  }
-
-  function renderMonitoringList(id,files,type){
-    const el=document.getElementById(id);
-    if(!el)return;
-    if(!files.length){
-      el.innerHTML='<div style="padding:8px;color:#64748b;font-size:.8rem;">எதுவும் இல்லை 🎉</div>';
-      return;
-    }
-    el.innerHTML=files.slice(0,8).map(function(f){
-      const x=getFileSlaInfo(f);
-      const last=getFileLastMovementDate(f);
-      const age=Math.max(0,Math.floor((Date.now()-last.getTime())/86400000));
-      let right="";
-      if(type==="sla"){
-        right=x.remaining<0
-          ? '<span style="color:#dc2626;font-weight:800;">🚨 '+Math.abs(x.remaining)+' நாள் தாமதம்</span>'
-          : '<span style="color:#d97706;font-weight:800;">⚠️ '+x.remaining+' நாள்</span>';
-      }else if(type==="followup"){
-        right='<span style="color:#d97706;font-weight:800;">📌 '+(x.remaining<0?"SLA கடந்தது":x.remaining+" நாள் மீதம்")+'</span>';
-      }else{
-        right='<span style="color:#64748b;font-weight:800;">🕒 '+age+' நாட்கள்</span>';
-      }
-      return '<div class="monitor-item"><div><b>'+escapeHtmlQR(f.officeNo||"-")+'</b><br><small>'+escapeHtmlQR(f.subject||"")+'</small></div><div style="text-align:right">'+right+'<br></div></div>';
-    }).join("");
-    if(files.length>8){
-      el.innerHTML+='<div style="padding-top:7px;font-size:.72rem;color:#64748b;text-align:center;">மேலும் '+(files.length-8)+' கோப்புகள்...</div>';
-    }
-  }
-
-  // ===== End Advanced File Monitoring =====
-
 </script>
 <!-- 🏷️ Sticker Options -->
 <div id="stickerOptionsModal" class="modal" style="display:none;">
