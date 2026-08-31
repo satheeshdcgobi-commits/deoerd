@@ -2605,25 +2605,70 @@ function toggleAdminTool(id){
         }
         const f = matchedFile;
         const status = String(f.status || "நிலை குறிப்பிடப்படவில்லை").trim();
-        const isTerminal = status === "முடிவுற்றது" || status === "திருப்பப்பட்டது" || status === "நிராகரிக்கப்பட்டது" || status === "Return";
+        const isInProgress = status === "பரிசீலனையில்";
+        const isTerminal =
+          status === "முடிவுற்றது" ||
+          status === "திருப்பப்பட்டது" ||
+          status === "நிராகரிக்கப்பட்டது" ||
+          status === "Return";
+
+        // QR display:
+        // பரிசீலனையில் -> கோப்பு எண் + நாள் + கோரிக்கை + நிலை + தற்போது யாரிடம்
+        // முடிவுற்றது/திருப்பப்பட்டது/நிராகரிக்கப்பட்டது -> கோப்பு எண் + நாள் +
+        // கோரிக்கை + நிலை + அலுவலக ந.க. எண்/நாள் + தபால் அனுப்பப்பட்ட தேதி.
         if (isTerminal) {
           card.innerHTML = `
             <div style="text-align:center;font-size:1.25rem;font-weight:800;color:#0c4a6e;">📂 கோப்பு விவரம்</div>
-            <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-              <div style="padding:15px;border-radius:12px;background:#f8fafc;text-align:center;"><b>கோப்பு எண்</b><br><span style="font-size:1.05rem;font-weight:800;">${escapeHtmlQR(f.officeNo || "-")}</span></div>
-              <div style="padding:15px;border-radius:12px;background:#f8fafc;text-align:center;"><b>நாள்</b><br><span style="font-size:1.05rem;font-weight:800;">${escapeHtmlQR(f.officeDate || "-")}</span></div>
-            </div>`;
+            <div style="text-align:center;margin-top:7px;color:#64748b;font-size:.86rem;">நிகழ்நேர Google Cloud தகவல்</div>
+            <div style="margin-top:18px;display:grid;gap:10px;">
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;">
+                <b>கோப்பு எண்</b><br>${escapeHtmlQR(f.officeNo || "-")}
+              </div>
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;">
+                <b>நாள்</b><br>${escapeHtmlQR(f.officeDate || "-")}
+              </div>
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;">
+                <b>கோரிக்கை விவரம்</b><br>${escapeHtmlQR(f.subject || "-")}
+              </div>
+              <div style="padding:13px;border-radius:12px;background:#ecfdf5;border:1px solid #bbf7d0;color:#166534;">
+                <b>🟢 தற்போதைய நிலை</b><br>
+                <span style="font-size:1.05rem;font-weight:800;">${escapeHtmlQR(status)}</span>
+              </div>
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;">
+                <b>அலுவலக ந.க. எண்</b><br>${escapeHtmlQR(f.prevRefNo || "-")}
+              </div>
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;">
+                <b>அலுவலக ந.க. தேதி</b><br>${escapeHtmlQR(f.docketDate || f.officeDate || "-")}
+              </div>
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;">
+                <b>📤 தபால் அனுப்பப்பட்ட தேதி</b><br>${escapeHtmlQR(f.dispatchDate || "-")}
+              </div>
+            </div>
+          `;
         } else {
           card.innerHTML = `
             <div style="text-align:center;font-size:1.25rem;font-weight:800;color:#0c4a6e;">📂 கோப்பு தற்போதைய நிலை</div>
             <div style="text-align:center;margin-top:7px;color:#64748b;font-size:.86rem;">நிகழ்நேர Google Cloud தகவல்</div>
             <div style="margin-top:18px;display:grid;gap:10px;">
-              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>கோப்பு எண்</b><br>${escapeHtmlQR(f.officeNo || "-")}</div>
-              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>நாள்</b><br>${escapeHtmlQR(f.officeDate || "-")}</div>
-              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>கோரிக்கை விவரம்</b><br>${escapeHtmlQR(f.subject || "-")}</div>
-              <div style="padding:13px;border-radius:12px;background:#ecfdf5;border:1px solid #bbf7d0;color:#166534;"><b>🟢 தற்போதைய நிலை</b><br><span style="font-size:1.05rem;font-weight:800;">${escapeHtmlQR(status)}</span></div>
-              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>தற்போது யாரிடம்</b><br>${escapeHtmlQR(f.currentWith || "-")}</div>
-            </div>`;
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;">
+                <b>கோப்பு எண்</b><br>${escapeHtmlQR(f.officeNo || "-")}
+              </div>
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;">
+                <b>நாள்</b><br>${escapeHtmlQR(f.officeDate || "-")}
+              </div>
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;">
+                <b>கோரிக்கை விவரம்</b><br>${escapeHtmlQR(f.subject || "-")}
+              </div>
+              <div style="padding:13px;border-radius:12px;background:#ecfdf5;border:1px solid #bbf7d0;color:#166534;">
+                <b>🟢 தற்போதைய நிலை</b><br>
+                <span style="font-size:1.05rem;font-weight:800;">${escapeHtmlQR(status)}</span>
+              </div>
+              ${isInProgress ? `
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;">
+                <b>தற்போது யாரிடம்</b><br>${escapeHtmlQR(f.currentWith || "-")}
+              </div>` : ""}
+            </div>
+          `;
         }
       })
       .catch((err) => {
