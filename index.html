@@ -1764,13 +1764,10 @@ function populateAdminSchoolDropdown() {
     saveLocalFiles(memoryFiles);
     if (GOOGLE_SHEET_API_URL && GOOGLE_SHEET_API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") {
       try {
-        await fetch(GOOGLE_SHEET_API_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "save", data: file })
-        });
-      } catch (err) {}
+        await postToCloud("save", file);
+      } catch (err) {
+        console.warn("Status save cloud:", err);
+      }
     }
     // Reload from Google Cloud so any uploaded final-order Drive URL is reflected
     // in the live QR immediately after saving.
