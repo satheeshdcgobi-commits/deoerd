@@ -1617,8 +1617,6 @@ function populateAdminSchoolDropdown() {
     document.getElementById('modalOfficeNo').value = file.officeNo;
     document.getElementById('modalCurrentWith').value = file.currentWith || "பிரிவு எழுத்தர் (Section Assistant)";
     document.getElementById('modalDocketDate').value = file.docketDate || '';
-    document.getElementById('modalOfficeNumberDisplay').value = file.officeNo || '';
-    document.getElementById('modalOfficeDateDisplay').value = file.officeDate || '';
     const omuNo = document.getElementById('modalOMUNo');
     const omuDate = document.getElementById('modalOMUDate');
     const mmuNo = document.getElementById('modalMMUNo');
@@ -1627,11 +1625,11 @@ function populateAdminSchoolDropdown() {
     if (omuDate) omuDate.value = normalizeDateOnly(file.omuDate || '');
     if (mmuNo) mmuNo.value = file.mmuNo || '';
     if (mmuDate) mmuDate.value = normalizeDateOnly(file.mmuDate || '');
-    document.getElementById('modalDispatchDate').value = file.dispatchDate || '';
-    document.getElementById('modalPostTrackId').value = file.postTrackId || '';
-    document.getElementById('modalAgDispatchDate').value = file.dispatchDate || '';
-    document.getElementById('modalAgReturnDispatchDate').value = file.dispatchDate || '';
-    document.getElementById('modalDeoAttachment').value = '';
+    const dispatchInput = document.getElementById('modalDispatchDate'); if (dispatchInput) dispatchInput.value = file.dispatchDate || '';
+    const postTrackInput = document.getElementById('modalPostTrackId'); if (postTrackInput) postTrackInput.value = file.postTrackId || '';
+    const agDispatchInput = document.getElementById('modalAgDispatchDate'); if (agDispatchInput) agDispatchInput.value = file.dispatchDate || '';
+    const agReturnDispatchInput = document.getElementById('modalAgReturnDispatchDate'); if (agReturnDispatchInput) agReturnDispatchInput.value = file.dispatchDate || '';
+    const attachmentInput = document.getElementById('modalDeoAttachment'); if (attachmentInput) attachmentInput.value = '';
     handleOfficerSelection(file.currentWith || "பிரிவு எழுத்தர் (Section Assistant)");
     const savedStatus = file.status || "பரிசீலனையில்";
     document.getElementById('modalStatus').value = savedStatus;
