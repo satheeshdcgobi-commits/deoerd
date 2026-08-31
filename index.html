@@ -1775,7 +1775,7 @@ function populateAdminSchoolDropdown() {
     // Reload from Google Cloud so any uploaded final-order Drive URL is reflected
     // in the live QR immediately after saving.
     try {
-      const latest = await fetch(GOOGLE_SHEET_API_URL + "?t=" + Date.now(), { cache: "no-store" }).then(r => r.json());
+      const latest = await fetch(GOOGLE_SHEET_API_URL + "?view=qr&t=" + Date.now(), { cache: "no-store" }).then(r => r.json());
       if (latest && Array.isArray(latest.files)) {
         memoryFiles = latest.files;
         saveLocalFiles(memoryFiles);
@@ -2627,7 +2627,7 @@ function toggleAdminTool(id){
         </div>
       </div>`;
 
-    const api = GOOGLE_SHEET_API_URL + "?t=" + Date.now();
+    const api = GOOGLE_SHEET_API_URL + "?view=qr&t=" + Date.now();
     fetch(api, {cache:"no-store"})
       .then(r => { if(!r.ok) throw new Error("Cloud HTTP "+r.status); return r.json(); })
       .then(data => {
