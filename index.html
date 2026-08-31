@@ -438,6 +438,52 @@
         </div>
       </div>
 
+
+      <div id="advancedFileMonitoringPanel" class="admin-section-card" style="display:none;margin-top:15px;">
+        <div class="admin-section-head">
+          <div>
+            <h4>📊 கோப்பு கண்காணிப்பு மையம்</h4>
+            <p>Timeline · SLA Alert · Follow-up Queue · Stale Files</p>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="refreshAdvancedFileMonitoring()">🔄 Refresh</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px;">
+          <div class="monitor-card monitor-blue"><b>🔄 Timeline</b><strong id="monitorTimelineCount">0</strong><span>கோப்புகள்</span></div>
+          <div class="monitor-card monitor-red"><b>🚨 SLA Alert</b><strong id="monitorSlaCount">0</strong><span>அவசரம் / காலாவதி</span></div>
+          <div class="monitor-card monitor-orange"><b>📌 Follow-up</b><strong id="monitorFollowupCount">0</strong><span>தொடர்பு கொள்ள வேண்டியவை</span></div>
+          <div class="monitor-card monitor-gray"><b>🕒 Stale Files</b><strong id="monitorStaleCount">0</strong><span>நகராத கோப்புகள்</span></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="monitor-list-card">
+            <h5>🚨 SLA Breach Alert</h5>
+            <div id="monitorSlaList"></div>
+          </div>
+          <div class="monitor-list-card">
+            <h5>📌 Follow-up Queue</h5>
+            <div id="monitorFollowupList"></div>
+          </div>
+          <div class="monitor-list-card" style="grid-column:1/-1;">
+            <h5>🕒 Stale File Detection</h5>
+            <div id="monitorStaleList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="fileTimelineModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:9999;align-items:center;justify-content:center;padding:15px;">
+        <div style="background:#fff;width:min(720px,96vw);max-height:90vh;overflow:auto;border-radius:16px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+            <div>
+              <h3 id="fileTimelineTitle" style="margin:0;color:var(--gov-dark);">🔄 File Movement Timeline</h3>
+              <small id="fileTimelineSub" style="color:#64748b;"></small>
+            </div>
+            <button type="button" class="btn btn-danger btn-sm" onclick="closeFileTimeline()">✕</button>
+          </div>
+          <div id="fileTimelineBody" style="margin-top:16px;"></div>
+        </div>
+      </div>
+
 <!-- பள்ளி செயல்பாட்டு மதிப்பீட்டு அட்டை -->
     <div id="scorecardSection" class="card" style="display: none; border-left: 6px solid #0284c7; background: #f8fafc;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -1149,9 +1195,14 @@
       const loginPanel = document.getElementById("schoolLoginStatusPanel");
       if (loginPanel) loginPanel.style.display = "block";
       loadSchoolLoginStatus();
+      const monitorPanel = document.getElementById("advancedFileMonitoringPanel");
+      if (monitorPanel) monitorPanel.style.display = "block";
+      refreshAdvancedFileMonitoring();
     } else {
       const schoolLoginPanel = document.getElementById("schoolLoginStatusPanel");
       if (schoolLoginPanel) schoolLoginPanel.style.display = "none";
+      const monitorPanelSchool = document.getElementById("advancedFileMonitoringPanel");
+      if (monitorPanelSchool) monitorPanelSchool.style.display = "none";
       loadSchoolStickyCircular(currentUser);
     }
     const entryOfficeDate = document.getElementById('entryOfficeDate');
@@ -1431,6 +1482,7 @@ function populateAdminSchoolDropdown() {
               <button class="btn btn-sm btn-ja" onclick="sendSingleFileWhatsApp(decodeURIComponent('${safeOfficeNo}'))" title="WhatsApp பகிர்வு">💬 WA</button>
               <button class="btn btn-sm" onclick="openStatusModal(decodeURIComponent('${safeOfficeNo}'))">நிலை</button>
               <button class="btn btn-sm btn-edit" onclick="openEditModal(decodeURIComponent('${safeOfficeNo}'))" title="விவரங்களை திருத்து">✏️ Edit</button>
+              <button class="btn btn-sm btn-secondary" onclick="openFileTimeline(decodeURIComponent('${safeOfficeNo}'))" title="கோப்பு நகர்வு Timeline">🔄 Timeline</button>
               <button class="btn btn-sm btn-warning" onclick="openStickerOptions(decodeURIComponent('${safeOfficeNo}'))" title="Sticker">🏷️ Sticker</button>
               ${file.status === 'முடிவுற்றது' ? `<button class="btn btn-sm btn-archive" onclick="archiveSingleFile(decodeURIComponent('${safeOfficeNo}'))" title="காப்பகத்திற்கு மாற்று">📦 Archive</button>` : ''}
               <button class="btn btn-sm btn-danger" onclick="deleteFile(decodeURIComponent('${safeOfficeNo}'))" title="கோப்பினை நீக்கு">🗑️ நீக்கு</button>
@@ -2599,27 +2651,47 @@ function toggleAdminTool(id){
           return;
         }
         const f = fileData;
-        const status = String(f.status || "நிலை குறிப்பிடப்படவில்லை").trim();
-        const isInProgress = status === "பரிசீலனையில்";
-        const isClosed = status === "முடிவுற்றது" ||
-                         status === "திருப்பப்பட்டது" ||
-                         status === "நிராகரிக்கப்பட்டது" ||
-                         status === "Return";
+        const status = String(f.status || "").trim();
 
-        // பரிசீலனையில் இருக்கும் கோப்புக்கு மட்டும் "தற்போது யாரிடம்" காட்டப்படும்.
-        // முடிவுற்றது / திருப்பப்பட்டது / நிராகரிக்கப்பட்டது என்றால் அலுவலக எண் + நாள் மட்டும்.
-        if (isClosed) {
-          card.innerHTML = `
-            <div style="text-align:center;font-size:1.25rem;font-weight:800;color:#0c4a6e;">📂 கோப்பு விவரம்</div>
-            <div style="margin-top:22px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-              <div style="padding:15px;border-radius:12px;background:#f8fafc;text-align:center;">
-                <b>கோப்பு எண்</b><br><span style="font-size:1.05rem;font-weight:800;">${escapeHtmlQR(f.officeNo)}</span>
-              </div>
-              <div style="padding:15px;border-radius:12px;background:#f8fafc;text-align:center;">
-                <b>நாள்</b><br><span style="font-size:1.05rem;font-weight:800;">${escapeHtmlQR(f.officeDate)}</span>
-              </div>
+        // Only these three statuses are terminal. For them, QR shows
+        // office number + date + status, but never "தற்போது யாரிடம்".
+        const isTerminal =
+          status === "முடிவுற்றது" ||
+          status === "திருப்பப்பட்டது" ||
+          status === "நிராகரிக்கப்பட்டது";
+
+        const statusHtml = `
+          <div style="padding:13px;border-radius:12px;background:#ecfdf5;border:1px solid #bbf7d0;color:#166534;">
+            <b>🟢 தற்போதைய நிலை</b><br>
+            <span style="font-size:1.05rem;font-weight:800;">${escapeHtmlQR(status || "நிலை குறிப்பிடப்படவில்லை")}</span>
+          </div>`;
+
+        const currentWithHtml = !isTerminal ? `
+          <div style="padding:12px;border-radius:12px;background:#f8fafc;">
+            <b>தற்போது யாரிடம்</b><br>${escapeHtmlQR(f.currentWith || "-")}
+          </div>` : "";
+
+        card.innerHTML = `
+          <div style="text-align:center;font-size:1.25rem;font-weight:800;color:#0c4a6e;">
+            📂 கோப்பு தற்போதைய நிலை
+          </div>
+          <div style="text-align:center;margin-top:7px;color:#64748b;font-size:.86rem;">
+            நிகழ்நேர Google Cloud தகவல்
+          </div>
+          <div style="margin-top:18px;display:grid;gap:10px;">
+            <div style="padding:12px;border-radius:12px;background:#f8fafc;">
+              <b>கோப்பு எண்</b><br>${escapeHtmlQR(f.officeNo || "-")}
             </div>
-          `;
+            <div style="padding:12px;border-radius:12px;background:#f8fafc;">
+              <b>நாள்</b><br>${escapeHtmlQR(f.officeDate || "-")}
+            </div>
+            ${statusHtml}
+            ${currentWithHtml}
+          </div>
+          <div style="margin-top:16px;text-align:center;font-size:.72rem;color:#94a3b8;">
+            கடைசி புதுப்பிப்பு: ${escapeHtmlQR(f.updatedAt || "-")}
+          </div>
+        `;
         } else {
           card.innerHTML = `
             <div style="text-align:center;font-size:1.25rem;font-weight:800;color:#0c4a6e;">📂 கோப்பு தற்போதைய நிலை</div>
@@ -2766,6 +2838,21 @@ function printFileSticker(){
 .admin-section-head h4{margin:0;color:var(--gov-dark)}
 .admin-section-head p{margin:3px 0 0;color:#64748b;font-size:.78rem}
 </style>
+
+<style id="advanced-file-monitor-style">
+.monitor-card{padding:11px;border-radius:12px;border:1px solid #e2e8f0;background:#f8fafc;display:flex;flex-direction:column;gap:3px}
+.monitor-card strong{font-size:1.35rem}
+.monitor-card span{font-size:.72rem;color:#64748b}
+.monitor-blue{border-left:4px solid #0284c7}.monitor-red{border-left:4px solid #dc2626}.monitor-orange{border-left:4px solid #d97706}.monitor-gray{border-left:4px solid #64748b}
+.monitor-list-card{border:1px solid #e2e8f0;border-radius:12px;padding:11px;background:#fff}
+.monitor-list-card h5{margin:0 0 8px;color:#334155}
+.monitor-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px dashed #e2e8f0}
+.monitor-item:last-child{border-bottom:0}
+.timeline-item{position:relative;padding:0 0 16px 22px;margin-left:7px;border-left:2px solid #cbd5e1}
+.timeline-dot{position:absolute;left:-7px;top:1px;width:11px;height:11px;border-radius:50%;background:#0284c7}
+.timeline-date{font-size:.72rem;color:#64748b}.timeline-stage{font-weight:800;color:#0f172a}.timeline-remark{font-size:.78rem;color:#475569;margin-top:3px}
+@media(max-width:760px){.monitor-card{padding:9px}.monitor-list-card{grid-column:1/-1!important}}
+</style>
 </head><body>
   ${clone.outerHTML}
   <script>window.onload=function(){setTimeout(function(){window.print();},350);};<\/script>
@@ -2829,6 +2916,148 @@ function printFileSticker(){
     }
   }
   // ===== End Login Status =====
+
+
+  // ===== Advanced File Monitoring =====
+  function isTerminalFileStatus(status){
+    return status === "முடிவுற்றது" ||
+           status === "திருப்பப்பட்டது" ||
+           status === "நிராகரிக்கப்பட்டது" ||
+           status === "Return";
+  }
+
+  function getFileLastMovementDate(file){
+    if(file && Array.isArray(file.history) && file.history.length){
+      const last=file.history[file.history.length-1];
+      const d=new Date(last.date);
+      if(!isNaN(d.getTime())) return d;
+    }
+    const d=new Date(file && (file.updatedAt || file.officeDate));
+    return isNaN(d.getTime()) ? new Date() : d;
+  }
+
+  function getFileSlaInfo(file){
+    const days=calculateDaysPending(file.officeDate);
+    const sla=parseInt(file.slaDays,10) || 15;
+    const remaining=sla-days;
+    return {days:days,sla:sla,remaining:remaining};
+  }
+
+  function getAdminOpenFiles(){
+    const files=Array.isArray(memoryFiles) ? memoryFiles : getLocalFiles();
+    return files.filter(function(f){
+      return f && !f.deleted && !f.archived && !isTerminalFileStatus(String(f.status||"").trim());
+    });
+  }
+
+  function refreshAdvancedFileMonitoring(){
+    const panel=document.getElementById("advancedFileMonitoringPanel");
+    if(!panel || currentUser!=="ADMIN") return;
+
+    const files=getAdminOpenFiles();
+    const slaFiles=files.filter(function(f){
+      const x=getFileSlaInfo(f);
+      return x.remaining <= 3;
+    }).sort(function(a,b){ return getFileSlaInfo(a).remaining-getFileSlaInfo(b).remaining; });
+
+    const followupFiles=files.filter(function(f){
+      const x=getFileSlaInfo(f);
+      const last=getFileLastMovementDate(f);
+      const daysSince=Math.floor((Date.now()-last.getTime())/86400000);
+      return x.remaining <= 5 || daysSince >= 3;
+    }).sort(function(a,b){
+      return getFileSlaInfo(a).remaining-getFileSlaInfo(b).remaining;
+    });
+
+    const staleFiles=files.filter(function(f){
+      const last=getFileLastMovementDate(f);
+      const daysSince=Math.floor((Date.now()-last.getTime())/86400000);
+      return daysSince >= 5;
+    }).sort(function(a,b){
+      return getFileLastMovementDate(a)-getFileLastMovementDate(b);
+    });
+
+    const ids={
+      timeline:"monitorTimelineCount",
+      sla:"monitorSlaCount",
+      followup:"monitorFollowupCount",
+      stale:"monitorStaleCount"
+    };
+    document.getElementById(ids.timeline).textContent=files.length;
+    document.getElementById(ids.sla).textContent=slaFiles.length;
+    document.getElementById(ids.followup).textContent=followupFiles.length;
+    document.getElementById(ids.stale).textContent=staleFiles.length;
+
+    renderMonitoringList("monitorSlaList",slaFiles,"sla");
+    renderMonitoringList("monitorFollowupList",followupFiles,"followup");
+    renderMonitoringList("monitorStaleList",staleFiles,"stale");
+  }
+
+  function renderMonitoringList(id,files,type){
+    const el=document.getElementById(id);
+    if(!el)return;
+    if(!files.length){
+      el.innerHTML='<div style="padding:8px;color:#64748b;font-size:.8rem;">எதுவும் இல்லை 🎉</div>';
+      return;
+    }
+    el.innerHTML=files.slice(0,8).map(function(f){
+      const x=getFileSlaInfo(f);
+      const last=getFileLastMovementDate(f);
+      const age=Math.max(0,Math.floor((Date.now()-last.getTime())/86400000));
+      let right="";
+      if(type==="sla"){
+        right=x.remaining<0
+          ? '<span style="color:#dc2626;font-weight:800;">🚨 '+Math.abs(x.remaining)+' நாள் தாமதம்</span>'
+          : '<span style="color:#d97706;font-weight:800;">⚠️ '+x.remaining+' நாள்</span>';
+      }else if(type==="followup"){
+        right='<span style="color:#d97706;font-weight:800;">📌 '+(x.remaining<0?"SLA கடந்தது":x.remaining+" நாள் மீதம்")+'</span>';
+      }else{
+        right='<span style="color:#64748b;font-weight:800;">🕒 '+age+' நாட்கள்</span>';
+      }
+      return '<div class="monitor-item"><div><b>'+escapeHtmlQR(f.officeNo||"-")+'</b><br><small>'+escapeHtmlQR(f.subject||"")+'</small></div><div style="text-align:right">'+right+'<br><button type="button" class="btn btn-sm btn-secondary" onclick="openFileTimeline('+JSON.stringify(String(f.officeNo||""))+')">Timeline</button></div></div>';
+    }).join("");
+    if(files.length>8){
+      el.innerHTML+='<div style="padding-top:7px;font-size:.72rem;color:#64748b;text-align:center;">மேலும் '+(files.length-8)+' கோப்புகள்...</div>';
+    }
+  }
+
+  function openFileTimeline(officeNo){
+    if(currentUser!=="ADMIN") return;
+    const file=getFileSafely(officeNo);
+    const modal=document.getElementById("fileTimelineModal");
+    const body=document.getElementById("fileTimelineBody");
+    const title=document.getElementById("fileTimelineTitle");
+    const sub=document.getElementById("fileTimelineSub");
+    if(!file || !modal || !body)return;
+
+    title.textContent="🔄 File Movement Timeline";
+    sub.textContent="கோப்பு எண்: "+(file.officeNo||"-")+" | நிலை: "+(file.status||"-");
+
+    let history=Array.isArray(file.history)?file.history:[];
+    if(!history.length){
+      body.innerHTML='<div style="padding:20px;text-align:center;color:#64748b;">இந்த கோப்பிற்கு Movement History இன்னும் பதிவு செய்யப்படவில்லை.</div>';
+    }else{
+      body.innerHTML=history.slice().reverse().map(function(h){
+        return '<div class="timeline-item">'+
+          '<span class="timeline-dot"></span>'+
+          '<div class="timeline-date">'+escapeHtmlQR(h.date||"-")+'</div>'+
+          '<div class="timeline-stage">'+escapeHtmlQR(h.stage||h.officer||"-")+'</div>'+
+          (h.remark?'<div class="timeline-remark">'+escapeHtmlQR(h.remark)+'</div>':"")+
+          '</div>';
+      }).join("");
+    }
+    modal.style.display="flex";
+  }
+
+  function closeFileTimeline(){
+    const modal=document.getElementById("fileTimelineModal");
+    if(modal) modal.style.display="none";
+  }
+
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape") closeFileTimeline();
+  });
+  // ===== End Advanced File Monitoring =====
 
 </script>
 <!-- 🏷️ Sticker Options -->
