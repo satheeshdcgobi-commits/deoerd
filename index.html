@@ -794,17 +794,22 @@
     <!-- Circle Box (Status Options) -->
     <div class="form-group">
       <label>கோப்பின் நிலை (Status):</label>
-      <select id="modalStatus" onchange="handleStatusSelection(this.value)">
+      <select id="modalStatus" onchange="handleStatusSelection(this.value)" onclick="handleStatusSelection(this.value)">
         <option value="பரிசீலனையில்">பரிசீலனையில் (In Progress)</option>
+        <option value="முடிவுற்றது">முடிவுற்றது</option>
+        <option value="திருப்பப்பட்டது">திருப்பப்பட்டது</option>
+        <option value="நிராகரிக்கப்பட்டது">நிராகரிக்கப்பட்டது</option>
       </select>
     </div>
     <div class="form-group" id="terminalOfficeInfo" style="display:none; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #cbd5e1;">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div><label style="font-weight:bold;">அலுவலக எண்:</label><input type="text" id="modalOfficeNumberDisplay" readonly></div>
-        <div><label style="font-weight:bold;">நாள்:</label><input type="text" id="modalOfficeDateDisplay" readonly></div>
+        <div><label style="font-weight:bold;">ஓ.மு. எண்:</label><input type="text" id="modalOMUNo" placeholder="ஓ.மு.எண்"></div>
+        <div><label style="font-weight:bold;">நாள்:</label><input type="date" id="modalOMUDate"></div>
+        <div><label style="font-weight:bold;">மூ.மு. எண்:</label><input type="text" id="modalMMUNo" placeholder="மூ.மு.எண்"></div>
+        <div><label style="font-weight:bold;">நாள்:</label><input type="date" id="modalMMUDate"></div>
       </div>
     </div>
-    <!-- திருப்பப்பட்டது / நிராகரிக்கப்பட்டால் தபால் அனுப்பிய தேதி -->
+    <!-- முடிவுற்றது / திருப்பப்பட்டது / நிராகரிக்கப்பட்டது - தபால் அனுப்பிய தேதி -->
     <div class="form-group" id="dispatchDateGroup" style="display:none; background:#f0fdf4; padding:10px; border-radius:8px; border:1px solid #bbf7d0;">
       <label style="color:#166534; font-weight:bold;">📤 தபால் அனுப்பிய தேதி (Dispatch Date):</label>
       <input type="date" id="modalDispatchDate">
@@ -1614,66 +1619,86 @@ function populateAdminSchoolDropdown() {
     document.getElementById('modalDocketDate').value = file.docketDate || '';
     document.getElementById('modalOfficeNumberDisplay').value = file.officeNo || '';
     document.getElementById('modalOfficeDateDisplay').value = file.officeDate || '';
+    const omuNo = document.getElementById('modalOMUNo');
+    const omuDate = document.getElementById('modalOMUDate');
+    const mmuNo = document.getElementById('modalMMUNo');
+    const mmuDate = document.getElementById('modalMMUDate');
+    if (omuNo) omuNo.value = file.omuNo || '';
+    if (omuDate) omuDate.value = normalizeDateOnly(file.omuDate || '');
+    if (mmuNo) mmuNo.value = file.mmuNo || '';
+    if (mmuDate) mmuDate.value = normalizeDateOnly(file.mmuDate || '');
     document.getElementById('modalDispatchDate').value = file.dispatchDate || '';
     document.getElementById('modalPostTrackId').value = file.postTrackId || '';
     document.getElementById('modalAgDispatchDate').value = file.dispatchDate || '';
     document.getElementById('modalAgReturnDispatchDate').value = file.dispatchDate || '';
     document.getElementById('modalDeoAttachment').value = '';
     handleOfficerSelection(file.currentWith || "பிரிவு எழுத்தர் (Section Assistant)");
-    document.getElementById('modalStatus').value = file.status;
-    handleStatusSelection(file.status);
+    const savedStatus = file.status || "பரிசீலனையில்";
+    document.getElementById('modalStatus').value = savedStatus;
+    handleStatusSelection(savedStatus);
     document.getElementById('statusModal').style.display = 'flex';
   }
   function closeStatusModal() { document.getElementById('statusModal').style.display = 'none'; }
-  function handleOfficerSelection(officer) {
+  function handleOfficerSelection(of) {
+    const officer = String(of || "").trim();
     const statusSelect = document.getElementById('modalStatus');
-    statusSelect.innerHTML = '';
-    if (officer === "பிரிவு எழுத்தர் (Section Assistant)" || officer === "கண்காணிப்பாளர்" || officer === "நேர்முக உதவியாளர் (PA)") {
-      statusSelect.innerHTML = `
-        <option value="பரிசீலனையில்">பரிசீலனையில் (In Progress)</option>
-      `;
-    } else if (officer === "மாவட்டக் கல்வி அலுவலர் (DEO)" || officer === "முதன்மைக் கல்வி அலுவலர் (CEO)") {
-      statusSelect.innerHTML = `
-        <option value="பரிசீலனையில்">பரிசீலனையில்</option>
-        <option value="முடிவுற்றது">முடிவுற்றது</option>
-        <option value="திருப்பப்பட்டது">திருப்பப்பட்டது</option>
-        <option value="நிராகரிக்கப்பட்டது">நிராகரிக்கப்பட்டது</option>
-      `;
-    } else if (officer === "AG OFFICE") {
-      statusSelect.innerHTML = `
-        <option value="பரிசீலனையில்">பரிசீலனையில்</option>
-        <option value="முடிவுற்றது">முடிவுற்றது</option>
-        <option value="திருப்பப்பட்டது">திருப்பப்பட்டது</option>
-        <option value="நிராகரிக்கப்பட்டது">நிராகரிக்கப்பட்டது</option>
-      `;
-    }
+    if (!statusSelect) return;
+
+    const previousStatus = statusSelect.value || "பரிசீலனையில்";
+    statusSelect.innerHTML = `
+      <option value="பரிசீலனையில்">பரிசீலனையில்</option>
+      <option value="முடிவுற்றது">முடிவுற்றது</option>
+      <option value="திருப்பப்பட்டது">திருப்பப்பட்டது</option>
+      <option value="நிராகரிக்கப்பட்டது">நிராகரிக்கப்பட்டது</option>
+    `;
+
+    // Keep the previously saved status when editing a file.
+    const allowed = ["பரிசீலனையில்","முடிவுற்றது","திருப்பப்பட்டது","நிராகரிக்கப்பட்டது"];
+    statusSelect.value = allowed.includes(previousStatus) ? previousStatus : "பரிசீலனையில்";
+
     handleStatusSelection(statusSelect.value);
   }
   function handleStatusSelection(status) {
-    const officer = document.getElementById('modalCurrentWith').value;
+    status = String(status || "").trim();
+
+    const officerEl = document.getElementById('modalCurrentWith');
+    const officer = officerEl ? String(officerEl.value || "").trim() : "";
     const dispatchGroup = document.getElementById('dispatchDateGroup');
     const agGroup = document.getElementById('agOfficeGroup');
     const agPostTrackSection = document.getElementById('agPostTrackSection');
     const agDispatchSection = document.getElementById('agDispatchSection');
-    dispatchGroup.style.display = 'none';
-    agGroup.style.display = 'none';
-    agPostTrackSection.style.display = 'none';
-    agDispatchSection.style.display = 'none';
     const docketGroup = document.getElementById('docketDateGroup');
     const terminalOfficeInfo = document.getElementById('terminalOfficeInfo');
-    const isTerminal = status === 'முடிவுற்றது' || status === 'திருப்பப்பட்டது' || status === 'நிராகரிக்கப்பட்டது' || status === 'Return';
-    if (docketGroup) docketGroup.style.display = status === 'பரிசீலனையில்' ? 'block' : 'none';
+
+    const isInProgress = status === 'பரிசீலனையில்';
+    const isTerminal =
+      status === 'முடிவுற்றது' ||
+      status === 'திருப்பப்பட்டது' ||
+      status === 'நிராகரிக்கப்பட்டது' ||
+      status === 'Return';
+
+    if (dispatchGroup) dispatchGroup.style.display = 'none';
+    if (agGroup) agGroup.style.display = 'none';
+    if (agPostTrackSection) agPostTrackSection.style.display = 'none';
+    if (agDispatchSection) agDispatchSection.style.display = 'none';
+
+    // Docket / Follow-up is ONLY for "பரிசீலனையில்".
+    if (docketGroup) docketGroup.style.display = isInProgress ? 'block' : 'none';
+
+    // O.Mu / Moo.Mu fields are ONLY for terminal statuses.
     if (terminalOfficeInfo) terminalOfficeInfo.style.display = isTerminal ? 'block' : 'none';
+
+    // Dispatch date is required/available for every terminal status.
+    if (dispatchGroup && isTerminal && officer !== "AG OFFICE") {
+      dispatchGroup.style.display = 'block';
+    }
+
     if (officer === "AG OFFICE") {
-      agGroup.style.display = 'block';
-      if (status === 'பரிசீலனையில்') {
-        agPostTrackSection.style.display = 'block';
-      } else if (status === 'திருப்பப்பட்டது' || status === 'நிராகரிக்கப்பட்டது' || status === 'முடிவுற்றது') {
-        agDispatchSection.style.display = 'block';
-      }
-    } else {
-      if (status === 'திருப்பப்பட்டது' || status === 'நிராகரிக்கப்பட்டது' || status === 'Return') {
-        dispatchGroup.style.display = 'block';
+      if (agGroup) agGroup.style.display = 'block';
+      if (isInProgress) {
+        if (agPostTrackSection) agPostTrackSection.style.display = 'block';
+      } else if (isTerminal) {
+        if (agDispatchSection) agDispatchSection.style.display = 'block';
       }
     }
   }
@@ -1684,6 +1709,10 @@ function populateAdminSchoolDropdown() {
     const newOfficer = document.getElementById('modalCurrentWith').value;
     const newStatus = document.getElementById('modalStatus').value;
     const docketDate = document.getElementById('modalDocketDate').value;
+    const omuNo = (document.getElementById('modalOMUNo')?.value || '').trim();
+    const omuDate = document.getElementById('modalOMUDate')?.value || '';
+    const mmuNo = (document.getElementById('modalMMUNo')?.value || '').trim();
+    const mmuDate = document.getElementById('modalMMUDate')?.value || '';
     let dispatchDate = '';
     let postTrackId = '';
     if (newOfficer === "AG OFFICE") {
@@ -1693,7 +1722,7 @@ function populateAdminSchoolDropdown() {
       } else {
         dispatchDate = document.getElementById('modalAgReturnDispatchDate').value;
       }
-    } else if (newStatus === 'திருப்பப்பட்டது' || newStatus === 'நிராகரிக்கப்பட்டது' || newStatus === 'Return') {
+    } else if (newStatus === 'முடிவுற்றது' || newStatus === 'திருப்பப்பட்டது' || newStatus === 'நிராகரிக்கப்பட்டது' || newStatus === 'Return') {
       dispatchDate = document.getElementById('modalDispatchDate').value;
     }
     let remark = "நிலை புதுப்பிக்கப்பட்டது.";
@@ -1701,14 +1730,14 @@ function populateAdminSchoolDropdown() {
     if (fileInput && fileInput.files.length > 0) {
       const reader = new FileReader();
       reader.onload = function(event) {
-        completeSaveStatus(officeNo, newOfficer, newStatus, remark, event.target.result, docketDate, dispatchDate, postTrackId);
+        completeSaveStatus(officeNo, newOfficer, newStatus, remark, event.target.result, docketDate, dispatchDate, postTrackId, omuNo, omuDate, mmuNo, mmuDate);
       };
       reader.readAsDataURL(fileInput.files[0]);
     } else {
-      completeSaveStatus(officeNo, newOfficer, newStatus, remark, file.deoAttachment, docketDate, dispatchDate, postTrackId);
+      completeSaveStatus(officeNo, newOfficer, newStatus, remark, file.deoAttachment, docketDate, dispatchDate, postTrackId, omuNo, omuDate, mmuNo, mmuDate);
     }
   }
-  async function completeSaveStatus(officeNo, newOfficer, newStatus, remark, attachmentData, docketDate, dispatchDate, postTrackId) {
+  async function completeSaveStatus(officeNo, newOfficer, newStatus, remark, attachmentData, docketDate, dispatchDate, postTrackId, omuNo, omuDate, mmuNo, mmuDate) {
     const file = getFileSafely(officeNo);
     if (!file) return;
     const nowTimeStr = new Date().toLocaleTimeString('ta-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -1719,6 +1748,10 @@ function populateAdminSchoolDropdown() {
     file.docketDate = docketDate;
     file.dispatchDate = dispatchDate;
     file.postTrackId = postTrackId;
+    file.omuNo = omuNo || '';
+    file.omuDate = omuDate || '';
+    file.mmuNo = mmuNo || '';
+    file.mmuDate = mmuDate || '';
     if (!file.history || typeof file.history === 'string') {
       try { file.history = JSON.parse(file.history); } catch(e) { file.history = []; }
     }
@@ -2579,144 +2612,70 @@ function toggleAdminTool(id){
     document.body.innerHTML = `
       <div style="min-height:100vh;background:#f1f5f9;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;font-family:'Plus Jakarta Sans','Mukta Malar',Arial,sans-serif;">
         <div id="qrLiveCard" style="width:100%;max-width:620px;background:#fff;border:1px solid #cbd5e1;border-radius:20px;padding:26px;box-shadow:0 18px 45px rgba(15,23,42,.12);">
-          <div style="text-align:center;font-size:1.25rem;font-weight:800;color:#0c4a6e;">🔳 கோப்பு QR நிலை</div>
+          <div style="text-align:center;font-size:1.25rem;font-weight:800;color:#0c4a6e;">🔳 கோப்பு QR Live Status</div>
           <div style="text-align:center;margin-top:7px;color:#64748b;font-size:.86rem;">கோப்பு எண்: <b>${escapeHtmlQR(officeNo)}</b></div>
           <div style="text-align:center;padding:35px 10px;color:#64748b;">☁️ Google Cloud தகவல் ஏற்றப்படுகிறது...</div>
         </div>
       </div>`;
 
     const api = GOOGLE_SHEET_API_URL + "?t=" + Date.now();
-
-    fetch(api, { cache: "no-store" })
-      .then(r => {
-        if (!r.ok) throw new Error("Cloud HTTP " + r.status);
-        return r.json();
-      })
+    fetch(api, {cache:"no-store"})
+      .then(r => { if(!r.ok) throw new Error("Cloud HTTP "+r.status); return r.json(); })
       .then(data => {
-        const card = document.getElementById("qrLiveCard");
-        if (!card) return;
+        const card=document.getElementById("qrLiveCard");
+        if(!card) return;
+        const target=String(officeNo).trim().toLowerCase();
+        const files=Array.isArray(data?.files)?data.files:[];
+        const f=files.find(x=>x && String(x.officeNo||"").trim().toLowerCase()===target);
 
-        const target = String(officeNo).trim().toLowerCase();
-        const allFiles = Array.isArray(data && data.files) ? data.files : [];
-        const matchedFile = allFiles.find(f =>
-          f && String(f.officeNo || "").trim().toLowerCase() === target
-        );
-
-        if (!matchedFile) {
-          card.innerHTML = `
-            <div style="text-align:center;font-size:1.25rem;font-weight:800;color:#b91c1c;">❌ கோப்பு கிடைக்கவில்லை</div>
-            <div style="text-align:center;margin-top:10px;color:#64748b;">கோப்பு எண்: <b>${escapeHtmlQR(officeNo)}</b></div>`;
+        if(!f){
+          card.innerHTML=`<div style="text-align:center;color:#b91c1c;font-size:1.2rem;font-weight:800;">❌ கோப்பு கிடைக்கவில்லை</div>`;
           return;
         }
 
-        const f = matchedFile;
-        const rawStatus = String(f.status || "").trim();
+        const status=String(f.status||"").trim();
+        const terminal = status.includes("முடிவுற்ற") || status.includes("திருப்ப") || status.includes("நிராக") || status==="Return";
+        const inProgress = status.includes("பரிசீலன");
+        const omuNo=f.omuNo || f.officeNumber || "-";
+        const omuDate=f.omuDate || "-";
+        const mmuNo=f.mmuNo || f.prevRefNo || "-";
+        const mmuDate=f.mmuDate || f.docketDate || "-";
+        const dispatch=f.dispatchDate || "-";
+        const attachment=f.deoAttachment || f.finalAttachment || f.attachment || "";
 
-        // Status may contain extra text such as "(Closed)".
-        // Therefore classify by Tamil status word, not exact string alone.
-        const isInProgress = rawStatus.includes("பரிசீலன");
-        const isCompleted = rawStatus.includes("முடிவுற்ற");
-        const isReturned = rawStatus.includes("திருப்ப");
-        const isRejected = rawStatus.includes("நிராக");
-        const isTerminal = isCompleted || isReturned || isRejected;
-
-        // Existing data fields are used for the final-office details.
-        // nkNo/nkDate are supported if present; otherwise existing N.K. reference/date fields are used.
-        const nkNo = f.nkNo || f.officeNkNo || f.prevRefNo || "-";
-        const nkDate = f.nkDate || f.officeNkDate || f.docketDate || f.officeDate || "-";
-        const dispatchDate = f.dispatchDate || f.postDispatchDate || "-";
-
-        if (isTerminal) {
-          // CLOSED / RETURNED / REJECTED:
-          // Current holder MUST NOT be shown.
-          // Show exactly: file no + date + request + status + N.K. no/date + dispatch date.
-          card.innerHTML = `
-            <div style="text-align:center;font-size:1.25rem;font-weight:800;color:#0c4a6e;">
-              📂 கோப்பு விவரம்
-            </div>
-            <div style="text-align:center;margin-top:7px;color:#64748b;font-size:.86rem;">
-              இறுதி நிலை
-            </div>
-
+        if(terminal){
+          card.innerHTML=`
+            <div style="text-align:center;font-size:1.25rem;font-weight:800;color:#0c4a6e;">📂 கோப்பு இறுதி நிலை</div>
+            <div style="text-align:center;margin-top:7px;color:#64748b;font-size:.86rem;">நிகழ்நேர Google Cloud தகவல்</div>
             <div style="margin-top:18px;display:grid;gap:10px;">
-              <div style="padding:12px;border-radius:12px;background:#f8fafc;">
-                <b>📑 கோப்பு எண்</b><br>${escapeHtmlQR(f.officeNo || "-")}
-              </div>
-
-              <div style="padding:12px;border-radius:12px;background:#f8fafc;">
-                <b>📅 நாள்</b><br>${escapeHtmlQR(f.officeDate || "-")}
-              </div>
-
-              <div style="padding:12px;border-radius:12px;background:#f8fafc;">
-                <b>📝 கோரிக்கை விவரம்</b><br>${escapeHtmlQR(f.subject || "-")}
-              </div>
-
-              <div style="padding:13px;border-radius:12px;background:#ecfdf5;border:1px solid #bbf7d0;color:#166534;">
-                <b>🟢 தற்போதைய நிலை</b><br>
-                <span style="font-size:1.05rem;font-weight:800;">${escapeHtmlQR(rawStatus || "-")}</span>
-              </div>
-
-              <div style="padding:12px;border-radius:12px;background:#f8fafc;">
-                <b>📄 அலுவலக ந.க. எண்</b><br>${escapeHtmlQR(nkNo)}
-              </div>
-
-              <div style="padding:12px;border-radius:12px;background:#f8fafc;">
-                <b>📅 அலுவலக ந.க. நாள்</b><br>${escapeHtmlQR(nkDate)}
-              </div>
-
-              <div style="padding:12px;border-radius:12px;background:#f8fafc;">
-                <b>📤 தபால் அனுப்பப்பட்ட தேதி</b><br>${escapeHtmlQR(dispatchDate)}
-              </div>
-            </div>
-          `;
-          return;
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>📑 கோப்பு எண்</b><br>${escapeHtmlQR(f.officeNo||"-")}</div>
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>📅 நாள்</b><br>${escapeHtmlQR(f.officeDate||"-")}</div>
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>📝 கோரிக்கை விவரம்</b><br>${escapeHtmlQR(f.subject||"-")}</div>
+              <div style="padding:13px;border-radius:12px;background:#ecfdf5;border:1px solid #bbf7d0;color:#166534;"><b>🟢 தற்போதைய நிலை</b><br><span style="font-size:1.05rem;font-weight:800;">${escapeHtmlQR(status||"-")}</span></div>
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>ஓ.மு. எண்</b><br>${escapeHtmlQR(omuNo)}</div>
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>ஓ.மு. நாள்</b><br>${escapeHtmlQR(omuDate)}</div>
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>மூ.மு. எண்</b><br>${escapeHtmlQR(mmuNo)}</div>
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>மூ.மு. நாள்</b><br>${escapeHtmlQR(mmuDate)}</div>
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>📤 தபால் அனுப்பப்பட்ட தேதி</b><br>${escapeHtmlQR(dispatch)}</div>
+              ${attachment ? `<div style="text-align:center;padding:12px;"><a href="${attachment}" download="Final_Order_${encodeURIComponent(f.officeNo||"file")}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 16px;border-radius:10px;background:#0c4a6e;color:#fff;text-decoration:none;font-weight:800;">⬇️ இறுதி ஆணை / கடிதம் Download</a></div>` : ""}
+            </div>`;
+        } else {
+          card.innerHTML=`
+            <div style="text-align:center;font-size:1.25rem;font-weight:800;color:#0c4a6e;">📂 கோப்பு தற்போதைய நிலை</div>
+            <div style="text-align:center;margin-top:7px;color:#64748b;font-size:.86rem;">நிகழ்நேர Google Cloud தகவல்</div>
+            <div style="margin-top:18px;display:grid;gap:10px;">
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>📑 கோப்பு எண்</b><br>${escapeHtmlQR(f.officeNo||"-")}</div>
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>📅 நாள்</b><br>${escapeHtmlQR(f.officeDate||"-")}</div>
+              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>📝 கோரிக்கை விவரம்</b><br>${escapeHtmlQR(f.subject||"-")}</div>
+              <div style="padding:13px;border-radius:12px;background:#ecfdf5;border:1px solid #bbf7d0;color:#166534;"><b>🟢 தற்போதைய நிலை</b><br><span style="font-size:1.05rem;font-weight:800;">${escapeHtmlQR(status||"-")}</span></div>
+              ${inProgress ? `<div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>👤 தற்போது யாரிடம்</b><br>${escapeHtmlQR(f.currentWith||"-")}</div>` : ""}
+            </div>`;
         }
-
-        // IN PROGRESS:
-        // Current holder is shown ONLY when the status is "பரிசீலனையில்".
-        card.innerHTML = `
-          <div style="text-align:center;font-size:1.25rem;font-weight:800;color:#0c4a6e;">
-            📂 கோப்பு தற்போதைய நிலை
-          </div>
-          <div style="text-align:center;margin-top:7px;color:#64748b;font-size:.86rem;">
-            நிகழ்நேர Google Cloud தகவல்
-          </div>
-
-          <div style="margin-top:18px;display:grid;gap:10px;">
-            <div style="padding:12px;border-radius:12px;background:#f8fafc;">
-              <b>📑 கோப்பு எண்</b><br>${escapeHtmlQR(f.officeNo || "-")}
-            </div>
-
-            <div style="padding:12px;border-radius:12px;background:#f8fafc;">
-              <b>📅 நாள்</b><br>${escapeHtmlQR(f.officeDate || "-")}
-            </div>
-
-            <div style="padding:12px;border-radius:12px;background:#f8fafc;">
-              <b>📝 கோரிக்கை விவரம்</b><br>${escapeHtmlQR(f.subject || "-")}
-            </div>
-
-            <div style="padding:13px;border-radius:12px;background:#ecfdf5;border:1px solid #bbf7d0;color:#166534;">
-              <b>🟢 தற்போதைய நிலை</b><br>
-              <span style="font-size:1.05rem;font-weight:800;">${escapeHtmlQR(rawStatus || "-")}</span>
-            </div>
-
-            ${isInProgress ? `
-            <div style="padding:12px;border-radius:12px;background:#f8fafc;">
-              <b>👤 தற்போது யாரிடம்</b><br>${escapeHtmlQR(f.currentWith || "-")}
-            </div>` : ""}
-          </div>
-        `;
       })
-      .catch((err) => {
-        console.error("QR status load failed:", err);
-        const card = document.getElementById("qrLiveCard");
-        if (card) card.innerHTML = `
-          <div style="text-align:center;font-size:1.2rem;font-weight:800;color:#b91c1c;">
-            ⚠️ Cloud தகவலைப் பெற முடியவில்லை
-          </div>
-          <div style="text-align:center;margin-top:10px;color:#64748b;">
-            Internet connection / Google Cloud connection சரிபார்க்கவும்.
-          </div>`;
+      .catch(err => {
+        console.error("QR live status failed:",err);
+        const card=document.getElementById("qrLiveCard");
+        if(card) card.innerHTML=`<div style="text-align:center;color:#b91c1c;font-weight:800;">⚠️ Cloud தகவலைப் பெற முடியவில்லை</div>`;
       });
   }
   function escapeHtmlQR(value) {
