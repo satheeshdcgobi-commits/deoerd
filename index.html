@@ -2634,11 +2634,11 @@ function toggleAdminTool(id){
         const status=String(f.status||"").trim();
         const terminal = status.includes("முடிவுற்ற") || status.includes("திருப்ப") || status.includes("நிராக") || status==="Return";
         const inProgress = status.includes("பரிசீலன");
-        const omuNo=f.omuNo || f.officeNumber || "-";
-        const omuDate=f.omuDate || "-";
-        const mmuNo=f.mmuNo || f.prevRefNo || "-";
-        const mmuDate=f.mmuDate || f.docketDate || "-";
-        const dispatch=f.dispatchDate || "-";
+        const omuNo=f.omuNo || f.officeNumber || "";
+        const omuDate=f.omuDate || "";
+        const mmuNo=f.mmuNo || f.prevRefNo || "";
+        const mmuDate=f.mmuDate || f.docketDate || "";
+        const dispatch=f.dispatchDate || "";
         const attachment=f.deoAttachment || f.finalAttachment || f.attachment || "";
 
         if(terminal){
@@ -2650,11 +2650,11 @@ function toggleAdminTool(id){
               <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>📅 நாள்</b><br>${escapeHtmlQR(f.officeDate||"-")}</div>
               <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>📝 கோரிக்கை விவரம்</b><br>${escapeHtmlQR(f.subject||"-")}</div>
               <div style="padding:13px;border-radius:12px;background:#ecfdf5;border:1px solid #bbf7d0;color:#166534;"><b>🟢 தற்போதைய நிலை</b><br><span style="font-size:1.05rem;font-weight:800;">${escapeHtmlQR(status||"-")}</span></div>
-              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>ஓ.மு. எண்</b><br>${escapeHtmlQR(omuNo)}</div>
-              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>ஓ.மு. நாள்</b><br>${escapeHtmlQR(omuDate)}</div>
-              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>மூ.மு. எண்</b><br>${escapeHtmlQR(mmuNo)}</div>
-              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>மூ.மு. நாள்</b><br>${escapeHtmlQR(mmuDate)}</div>
-              <div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>📤 தபால் அனுப்பப்பட்ட தேதி</b><br>${escapeHtmlQR(dispatch)}</div>
+              ${omuNo && omuNo !== "-" ? `<div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>ஓ.மு. எண்</b><br>${escapeHtmlQR(omuNo)}</div>` : ""}
+              ${omuDate && omuDate !== "-" ? `<div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>நாள்</b><br>${escapeHtmlQR(omuDate)}</div>` : ""}
+              ${mmuNo && mmuNo !== "-" ? `<div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>மூ.மு. எண்</b><br>${escapeHtmlQR(mmuNo)}</div>` : ""}
+              ${mmuDate && mmuDate !== "-" ? `<div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>நாள்</b><br>${escapeHtmlQR(mmuDate)}</div>` : ""}
+              ${dispatch && dispatch !== "-" ? `<div style="padding:12px;border-radius:12px;background:#f8fafc;"><b>📤 தபால் அனுப்பப்பட்ட தேதி</b><br>${escapeHtmlQR(dispatch)}</div>` : ""}
               ${attachment ? `<div style="text-align:center;padding:12px;"><a href="${attachment}" download="Final_Order_${encodeURIComponent(f.officeNo||"file")}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 16px;border-radius:10px;background:#0c4a6e;color:#fff;text-decoration:none;font-weight:800;">⬇️ இறுதி ஆணை / கடிதம் Download</a></div>` : ""}
             </div>`;
         } else {
