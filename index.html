@@ -566,7 +566,12 @@
           </div>
           <div class="form-group">
             <label>தீர்வு காலக்கெடு (SLA Days):</label>
-            <select id="entrySlaDays"><option value="5" selected>5 நாட்கள்</option><option value="10">10 நாட்கள்</option><option value="15">15 நாட்கள்</option><option value="20">20 நாட்கள்</option></select>
+            <select id="entrySlaDays">
+<option value="5" selected>5 நாட்கள்</option>
+<option value="10">10 நாட்கள்</option>
+<option value="15">15 நாட்கள்</option>
+<option value="20">20 நாட்கள்</option>
+</select>
           </div>
           <div class="form-group">
             <label>மனு வகைப்பாடு (Category):</label>
@@ -732,7 +737,12 @@
         </div>
         <div class="form-group">
           <label>தீர்வு காலக்கெடு (SLA Days):</label>
-          <select id="editSlaDays"><option value="5" selected>5 நாட்கள்</option><option value="10">10 நாட்கள்</option><option value="15">15 நாட்கள்</option><option value="20">20 நாட்கள்</option></select>
+          <select id="editSlaDays">
+<option value="5" selected>5 நாட்கள்</option>
+<option value="10">10 நாட்கள்</option>
+<option value="15">15 நாட்கள்</option>
+<option value="20">20 நாட்கள்</option>
+</select>
         </div>
         <div class="form-group">
           <label>மனு வகைப்பாடு (Category):</label>
@@ -933,8 +943,8 @@
   function normalizeDateOnly(value){ if(!value)return ''; const x=String(value).trim(); if(/^\d{4}-\d{2}-\d{2}/.test(x))return x.slice(0,10); const d=new Date(x); return isNaN(d.getTime())?x:d.toISOString().slice(0,10); }
   function stampUpdated(file){ file.updatedAt=new Date().toISOString(); file.officeDate=normalizeDateOnly(file.officeDate); file.docketDate=normalizeDateOnly(file.docketDate); file.dispatchDate=normalizeDateOnly(file.dispatchDate); return file; }
   function queueCloudAction(action,data){ const q=JSON.parse(localStorage.getItem('cloud_pending_actions_v1')||'[]'); q.push({action,data,queuedAt:new Date().toISOString()}); localStorage.setItem('cloud_pending_actions_v1',JSON.stringify(q.slice(-200))); }
-  async function postToCloud(action,data){ try{ const body=new URLSearchParams(); body.set('payload',JSON.stringify({action:action,data:data})); await fetch(GOOGLE_SHEET_API_URL,{method:'POST',mode:'no-cors',body:body,keepalive:true}); return true; }catch(e){ queueCloudAction(action,data); return false; } }
-  async function flushCloudQueue(){ const q=JSON.parse(localStorage.getItem('cloud_pending_actions_v1')||'[]'); const left=[]; for(const item of q){ try{await fetch(GOOGLE_SHEET_API_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams({payload:JSON.stringify(item)}),keepalive:true});}catch(e){left.push(item);} } localStorage.setItem('cloud_pending_actions_v1',JSON.stringify(left.slice(-200))); }
+  async function postToCloud(action,data){ try{ await fetch(GOOGLE_SHEET_API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,data})}); return true; }catch(e){ queueCloudAction(action,data); return false; } }
+  async function flushCloudQueue(){ const q=JSON.parse(localStorage.getItem('cloud_pending_actions_v1')||'[]'); const left=[]; for(const item of q){ try{await fetch(GOOGLE_SHEET_API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(item)});}catch(e){left.push(item);} } localStorage.setItem('cloud_pending_actions_v1',JSON.stringify(left.slice(-200))); }
   // கணினியின் தற்போதைய தேதியை இயல்பாகக் கொண்டு வருதல்
   const DEFAULT_NOTICE = {
     date: new Date().toISOString().slice(0, 10),
@@ -1022,7 +1032,7 @@
         await fetch(GOOGLE_SHEET_API_URL, {
           method: "POST",
           mode: "no-cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "save_notice", data: notice })
         });
       } catch (err) {}
@@ -1340,7 +1350,15 @@ function populateAdminSchoolDropdown() {
     const diffTime = Math.abs(today - entryDate);
     return Math.floor(diffTime / (1000 * 60 * 60 * 24));
   }
-  function renderDashboard() {
+  function isTerminalStatus(status){
+  const x=String(status||"").trim();
+  return x==="முடிவுற்றது" || x==="நிராகரிக்கப்பட்டது" || x==="திருப்பப்பட்டது" || x==="Return" || x.includes("காலாவதியாகி");
+}
+function isReturnedStatus(status){
+  const x=String(status||"").trim();
+  return x==="நிராகரிக்கப்பட்டது" || x==="திருப்பப்பட்டது" || x==="Return" || x.includes("காலாவதியாகி");
+}
+function renderDashboard() {
     const allFiles = memoryFiles;
     const isAdmin = currentUser === 'ADMIN';
     const now = new Date();
@@ -1351,12 +1369,12 @@ function populateAdminSchoolDropdown() {
       return new Date(b.officeDate || 0) - new Date(a.officeDate || 0);
     });
     const totalCount = accessibleFiles.length;
-    const completedCount = accessibleFiles.filter(f => (f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி'))).length;
-    const pendingCount = accessibleFiles.filter(f => !(f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி'))).length;
+    const completedCount = accessibleFiles.filter(f => (isTerminalStatus(f.status) || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி'))).length;
+    const pendingCount = accessibleFiles.filter(f => !(isTerminalStatus(f.status) || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி'))).length;
     const urgentCount = accessibleFiles.filter(f => f.priority && f.priority.includes('Urgent')).length;
     const thisMonthCount = accessibleFiles.filter(f => f.officeDate && String(f.officeDate).startsWith(currentMonthStr)).length;
     const overdueCount = accessibleFiles.filter(f => {
-      if ((f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி'))) return false;
+      if ((isTerminalStatus(f.status) || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி'))) return false;
       const days = calculateDaysPending(f.officeDate);
       const sla = parseInt(f.slaDays) || 5;
       return days > sla;
@@ -1368,11 +1386,11 @@ function populateAdminSchoolDropdown() {
     document.getElementById('statOverdue').innerText = overdueCount;
     document.getElementById('statThisMonth').innerText = thisMonthCount;
     let displayFiles = accessibleFiles;
-    if (currentFilter === 'PENDING') displayFiles = accessibleFiles.filter(f => !(f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி')));
-    if (currentFilter === 'COMPLETED') displayFiles = accessibleFiles.filter(f => (f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி')));
+    if (currentFilter === 'PENDING') displayFiles = accessibleFiles.filter(f => !(isTerminalStatus(f.status) || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி')));
+    if (currentFilter === 'COMPLETED') displayFiles = accessibleFiles.filter(f => (isTerminalStatus(f.status) || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி')));
     if (currentFilter === 'RETURNED') displayFiles = accessibleFiles.filter(f => f.status === 'Return' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || String(f.status||'').includes('காலாவதியாகி'));
     if (currentFilter === 'URGENT') displayFiles = accessibleFiles.filter(f => f.priority && f.priority.includes('Urgent'));
-    if (currentFilter === 'OVERDUE') displayFiles = accessibleFiles.filter(f => !(f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி')) && calculateDaysPending(f.officeDate) > (parseInt(f.slaDays) || 5));
+    if (currentFilter === 'OVERDUE') displayFiles = accessibleFiles.filter(f => !(isTerminalStatus(f.status) || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி')) && calculateDaysPending(f.officeDate) > (parseInt(f.slaDays) || 5));
     if (currentFilter === 'THIS_MONTH') displayFiles = accessibleFiles.filter(f => f.officeDate && String(f.officeDate).startsWith(currentMonthStr));
     if (currentCategoryFilter !== 'ALL') {
       displayFiles = displayFiles.filter(f => f.category === currentCategoryFilter);
@@ -1463,7 +1481,7 @@ function populateAdminSchoolDropdown() {
         await fetch(GOOGLE_SHEET_API_URL, {
           method: "POST",
           mode: "no-cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "save", data: file })
         });
       } catch (err) {}
@@ -1516,10 +1534,17 @@ function populateAdminSchoolDropdown() {
     };
     memoryFiles.unshift(newEntry);
     saveLocalFiles(memoryFiles);
-    renderDashboard();
-    updateCharts();
     document.getElementById('submitBtn').innerText = "கிளவுடில் சேமிக்கப்படுகிறது...";
-    await postToCloud('save', stampUpdated(newEntry));
+    if (GOOGLE_SHEET_API_URL && GOOGLE_SHEET_API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") {
+      try {
+        await fetch(GOOGLE_SHEET_API_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "save", data: newEntry })
+        });
+      } catch (err) {}
+    }
     document.getElementById('newRequestForm').reset();
     document.getElementById('entryOfficeDate').valueAsDate = new Date();
     document.getElementById('submitBtn').innerText = "கோப்பினைப் பதிவு செய் 💾";
@@ -1566,7 +1591,7 @@ function populateAdminSchoolDropdown() {
         await fetch(GOOGLE_SHEET_API_URL, {
           method: "POST",
           mode: "no-cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "save", data: file })
         });
       } catch (err) {}
@@ -1596,12 +1621,18 @@ function populateAdminSchoolDropdown() {
       fetch(GOOGLE_SHEET_API_URL, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "save", data: file })
       });
     }
   }
-  function viewAttachment(officeNo) {
+  function downloadAttachment(officeNo){
+  const file=getFileSafely(officeNo);
+  if(!file || !file.deoAttachment){alert('இறுதி ஆணை / கடித இணைப்பு இல்லை.');return;}
+  const a=document.createElement('a'); a.href=file.deoAttachment; a.target='_blank'; a.rel='noopener noreferrer'; a.download='';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function viewAttachment(officeNo) {
     const file = getFileSafely(officeNo);
     if (!file || !file.deoAttachment) return;
     const win = window.open();
@@ -2283,40 +2314,42 @@ function toggleScorecard() {
     sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
     if (sec.style.display === 'block') renderScorecard();
   }
-  function renderScorecard() {
-    const tbody = document.getElementById('scorecardTableBody');
-    tbody.innerHTML = '';
-    const schools = ["SCH_1", "SCH_2", "SCH_3", "SCH_4", "SCH_5", "SCH_OTHERS"];
-    schools.forEach(schId => {
-      const schFiles = memoryFiles.filter(f => f.schoolId === schId);
-      const total = schFiles.length;
-      if (total === 0) return;
-      const completed = schFiles.filter(f => f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி')).length;
-      const pending = schFiles.filter(f => !(f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி'))).length;
-      const returned = schFiles.filter(f => f.status === 'Return' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || String(f.status||'').includes('காலாவதியாகி')).length;
-      let score = Math.round(((completed / total) * 100) - ((returned / total) * 20));
-      if (score < 0) score = 0;
-      if (score > 100) score = 100;
-      let grade = 'B';
-      let gradeClass = 'grade-b';
-      if (score >= 85) { grade = 'A+ (Excellent)'; gradeClass = 'grade-a-plus'; }
-      else if (score >= 70) { grade = 'A (Good)'; gradeClass = 'grade-a'; }
-      else if (score >= 50) { grade = 'B (Satisfactory)'; gradeClass = 'grade-b'; }
-      else { grade = 'C (Action Needed)'; gradeClass = 'grade-c'; }
-      tbody.innerHTML += `
-        <tr>
-          <td><b>${SCHOOL_NAMES[schId]}</b></td>
-          <td><button class="score-link" onclick="showScorecardFiles('${schId}','ALL')"><b>${total}</b></button></td>
-          <td style="color:#16a34a;font-weight:bold;"><button class="score-link" onclick="showScorecardFiles('${schId}','COMPLETED')">${completed}</button></td>
-          <td style="color:#d97706;font-weight:bold;"><button class="score-link" onclick="showScorecardFiles('${schId}','PENDING')">${pending}</button></td>
-          <td style="color:#dc2626;font-weight:bold;"><button class="score-link" onclick="showScorecardFiles('${schId}','RETURNED')">${returned}</button></td>
-          <td><b style="font-size:0.95rem;">${score}%</b></td>
-          <td><span class="grade-badge ${gradeClass}">${grade}</span></td>
-        </tr>
-      `;
-    });
-  }
-  function openArchiveModal() {
+  function showScorecardFiles(schoolId,filter){
+  currentSpecificSchoolFilter=schoolId||'ALL';
+  currentFilter=filter||'ALL';
+  currentCategoryFilter='ALL';
+  startDateFilter=null; endDateFilter=null;
+  const sf=document.getElementById('schoolSpecificFilter'); if(sf) sf.value=schoolId||'ALL';
+  const sec=document.getElementById('scorecardSection'); if(sec) sec.style.display='none';
+  renderDashboard();
+  document.getElementById('mainFilesTable')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderScorecard(){
+  const tbody=document.getElementById('scorecardTableBody'); if(!tbody)return;
+  tbody.innerHTML='';
+  ["SCH_1","SCH_2","SCH_3","SCH_4","SCH_5","SCH_OTHERS"].forEach(schId=>{
+    const files=memoryFiles.filter(f=>f.schoolId===schId), total=files.length;
+    if(!total)return;
+    const completed=files.filter(f=>isTerminalStatus(f.status)).length;
+    const pending=files.filter(f=>!isTerminalStatus(f.status)).length;
+    const returned=files.filter(f=>isReturnedStatus(f.status)).length;
+    let score=Math.round((completed/total*100)-(returned/total*20)); score=Math.max(0,Math.min(100,score));
+    let grade='B', cls='grade-b';
+    if(score>=85){grade='A+ (Excellent)';cls='grade-a-plus';}
+    else if(score>=70){grade='A (Good)';cls='grade-a';}
+    else if(score<50){grade='C (Action Needed)';cls='grade-c';}
+    const sid=encodeURIComponent(schId);
+    tbody.innerHTML+=`<tr>
+      <td><b>${SCHOOL_NAMES[schId]}</b></td>
+      <td><button class="btn btn-sm btn-secondary" onclick="showScorecardFiles(decodeURIComponent('${sid}'),'ALL')">${total}</button></td>
+      <td><button class="btn btn-sm btn-success" onclick="showScorecardFiles(decodeURIComponent('${sid}'),'COMPLETED')">${completed}</button></td>
+      <td><button class="btn btn-sm btn-warning" onclick="showScorecardFiles(decodeURIComponent('${sid}'),'PENDING')">${pending}</button></td>
+      <td><button class="btn btn-sm btn-danger" onclick="showScorecardFiles(decodeURIComponent('${sid}'),'RETURNED')">${returned}</button></td>
+      <td><b>${score}%</b></td><td><span class="grade-badge ${cls}">${grade}</span></td>
+    </tr>`;
+  });
+}
+function openArchiveModal() {
     renderArchiveList();
     document.getElementById('archiveModal').style.display = 'flex';
   }
