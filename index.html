@@ -262,27 +262,31 @@
     #qrCodeCanvas { display:flex; justify-content:center; align-items:center; margin:18px auto; min-height:230px; }
     #qrCodeCanvas img, #qrCodeCanvas canvas { margin:auto; }
     .qr-status-link { font-size:.72rem; color:#64748b; word-break:break-all; background:#f8fafc; padding:8px; border-radius:8px; }
-  </style>
+  
+.score-link{border:0;background:transparent;color:inherit;font:inherit;font-weight:800;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;padding:2px 5px}
+.score-link:hover{color:#0284c7}
+
+</style>
 </head>
 <body class="theme-ADMIN">
+
+
+
 <div class="container">
   <!-- முகப்பு பேனர் -->
-  <div class="hero-banner">
-    <div class="hero-text">
-      <div style="display:flex; align-items:center; gap:8px; margin-bottom: 6px;">
-        <span class="badge-tn">🏛️ தமிழ்நாடு பள்ளிக் கல்வித்துறை</span>
-        <span class="badge-tn">பிரிவு : அ2</span>
-        <span class="cloud-status" id="cloudStatusBadge">🟢 Cloud Synced</span>
-      </div>
-      <h1>மாவட்டக் கல்வி அலுவலகம் (இடைநிலை) ஈரோடு</h1>
-      <p style="margin:4px 0 0 0; font-size:0.95rem; color:#e0f2fe;">கோப்பு கண்காணிப்பு, நிகழ்நேர தகவல் & ஆய்வுக் கட்டுப்பாட்டு தளம்</p>
+  <div class="hero-banner" style="display:grid;grid-template-columns:1fr 2fr 1fr;align-items:center;gap:12px;">
+    <div style="text-align:left;">
+      <span class="badge-tn">பிரிவு: அ2</span>
+      <span class="cloud-status" id="cloudStatusBadge" style="display:flex;width:max-content;margin-top:6px;">🟢 Cloud Synced</span>
     </div>
-    
-    <div style="text-align: right;">
-      <div style="color:#bae6fd; font-weight: 700; font-size:0.92rem; margin-bottom: 6px;">
-        உதவியாளர்: து.சதீஷ்குமார்
-      </div>
-      <div id="headerUserActions" style="display: none; justify-content: flex-end; gap: 6px;">
+    <div style="text-align:center;">
+      <div style="font-size:1.35rem;font-weight:800;">பள்ளிக்கல்வித்துறை</div>
+      <h1 style="justify-content:center;text-align:center;">மாவட்டக் கல்வி அலுவலகம் (இடைநிலை) ஈரோடு</h1>
+      <p style="margin:4px 0 0;font-size:.95rem;color:#e0f2fe;">கோப்பு கண்காணிப்பு, நிகழ்நேர தகவல் & ஆய்வுக் கட்டுப்பாட்டு தளம்</p>
+    </div>
+    <div style="text-align:right;">
+      <div style="color:#bae6fd;font-weight:700;font-size:.92rem;margin-bottom:6px;">உதவியாளர்: து.சதீஷ்குமார்</div>
+      <div id="headerUserActions" style="display:none;justify-content:flex-end;gap:6px;">
         <button class="btn btn-sm header-btn-pwd" onclick="openPwdModal()">🔑 கடவுச்சொல்</button>
         <button class="btn btn-sm header-btn-logout" onclick="logout()">🚪 வெளியேறு</button>
       </div>
@@ -562,11 +566,7 @@
           </div>
           <div class="form-group">
             <label>தீர்வு காலக்கெடு (SLA Days):</label>
-            <select id="entrySlaDays">
-              <option value="3">3 நாட்கள்</option>
-              <option value="5" selected>5 நாட்கள்</option>
-              <option value="9">9 நாட்கள்</option>
-            </select>
+            <select id="entrySlaDays"><option value="5" selected>5 நாட்கள்</option><option value="10">10 நாட்கள்</option><option value="15">15 நாட்கள்</option><option value="20">20 நாட்கள்</option></select>
           </div>
           <div class="form-group">
             <label>மனு வகைப்பாடு (Category):</label>
@@ -661,7 +661,7 @@
               <th>செயல்பாடுகள்</th>
             </tr>
           </thead>
-          <tbody id="filesTableBody"></tbody>
+          <tbody id="filesSection" style="scroll-margin-top:15px"></div><tbody ></tbody>
         </table>
       </div>
     </div>
@@ -732,11 +732,7 @@
         </div>
         <div class="form-group">
           <label>தீர்வு காலக்கெடு (SLA Days):</label>
-          <select id="editSlaDays">
-            <option value="3">3 நாட்கள்</option>
-            <option value="5" selected>5 நாட்கள்</option>
-            <option value="9">9 நாட்கள்</option>
-          </select>
+          <select id="editSlaDays"><option value="5" selected>5 நாட்கள்</option><option value="10">10 நாட்கள்</option><option value="15">15 நாட்கள்</option><option value="20">20 நாட்கள்</option></select>
         </div>
         <div class="form-group">
           <label>மனு வகைப்பாடு (Category):</label>
@@ -937,8 +933,8 @@
   function normalizeDateOnly(value){ if(!value)return ''; const x=String(value).trim(); if(/^\d{4}-\d{2}-\d{2}/.test(x))return x.slice(0,10); const d=new Date(x); return isNaN(d.getTime())?x:d.toISOString().slice(0,10); }
   function stampUpdated(file){ file.updatedAt=new Date().toISOString(); file.officeDate=normalizeDateOnly(file.officeDate); file.docketDate=normalizeDateOnly(file.docketDate); file.dispatchDate=normalizeDateOnly(file.dispatchDate); return file; }
   function queueCloudAction(action,data){ const q=JSON.parse(localStorage.getItem('cloud_pending_actions_v1')||'[]'); q.push({action,data,queuedAt:new Date().toISOString()}); localStorage.setItem('cloud_pending_actions_v1',JSON.stringify(q.slice(-200))); }
-  async function postToCloud(action,data){ try{ await fetch(GOOGLE_SHEET_API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,data})}); return true; }catch(e){ queueCloudAction(action,data); return false; } }
-  async function flushCloudQueue(){ const q=JSON.parse(localStorage.getItem('cloud_pending_actions_v1')||'[]'); const left=[]; for(const item of q){ try{await fetch(GOOGLE_SHEET_API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(item)});}catch(e){left.push(item);} } localStorage.setItem('cloud_pending_actions_v1',JSON.stringify(left.slice(-200))); }
+  async function postToCloud(action,data){ try{ const body=new URLSearchParams(); body.set('payload',JSON.stringify({action:action,data:data})); await fetch(GOOGLE_SHEET_API_URL,{method:'POST',mode:'no-cors',body:body,keepalive:true}); return true; }catch(e){ queueCloudAction(action,data); return false; } }
+  async function flushCloudQueue(){ const q=JSON.parse(localStorage.getItem('cloud_pending_actions_v1')||'[]'); const left=[]; for(const item of q){ try{await fetch(GOOGLE_SHEET_API_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams({payload:JSON.stringify(item)}),keepalive:true});}catch(e){left.push(item);} } localStorage.setItem('cloud_pending_actions_v1',JSON.stringify(left.slice(-200))); }
   // கணினியின் தற்போதைய தேதியை இயல்பாகக் கொண்டு வருதல்
   const DEFAULT_NOTICE = {
     date: new Date().toISOString().slice(0, 10),
@@ -1026,7 +1022,7 @@
         await fetch(GOOGLE_SHEET_API_URL, {
           method: "POST",
           mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({ action: "save_notice", data: notice })
         });
       } catch (err) {}
@@ -1280,14 +1276,20 @@ function populateAdminSchoolDropdown() {
     document.getElementById('cloudStatusBadge').innerText='🟡 Cloud Syncing...';
     try {
       await flushCloudQueue();
-      const response=await fetch(GOOGLE_SHEET_API_URL+'?t='+Date.now(),{cache:'no-store'});
+      const response=await fetch(GOOGLE_SHEET_API_URL+'?view=files&t='+Date.now(),{cache:'no-store',redirect:'follow'});
       if(!response.ok)throw new Error('Cloud HTTP '+response.status);
       const resData=await response.json();
       if(resData.notice){resData.notice.date=normalizeDateOnly(resData.notice.date);localStorage.setItem('system_notice_v3',JSON.stringify(resData.notice));renderNoticeBoard(resData.notice);}
-      const cloudList=Array.isArray(resData.files)?resData.files:[], localList=getLocalFiles(), map=new Map();
-      cloudList.forEach(f=>{if(!f||!f.officeNo)return;f.officeDate=normalizeDateOnly(f.officeDate);f.docketDate=normalizeDateOnly(f.docketDate);f.dispatchDate=normalizeDateOnly(f.dispatchDate);if(typeof f.history==='string'){try{f.history=JSON.parse(f.history)}catch(e){f.history=[]}}map.set(String(f.officeNo).trim().toLowerCase(),f);});
-      localList.forEach(f=>{if(!f||!f.officeNo)return;const k=String(f.officeNo).trim().toLowerCase(),c=map.get(k);if(!c)map.set(k,f);else if((Date.parse(f.updatedAt||'')||0)>(Date.parse(c.updatedAt||'')||0))map.set(k,f);});
-      memoryFiles=Array.from(map.values()).filter(f=>!f.deleted&&!f.archived);saveLocalFiles(memoryFiles);archivedFiles=getArchivedFiles();document.getElementById('cloudStatusBadge').innerText='🟢 Cloud Synced';
+      const cloudList=Array.isArray(resData.files)?resData.files:(resData.data&&Array.isArray(resData.data.files)?resData.data.files:[]);
+      const localList=getLocalFiles(), map=new Map();
+      cloudList.forEach(f=>{if(!f||!String(f.officeNo||'').trim())return;f.officeNo=String(f.officeNo).trim();f.officeDate=normalizeDateOnly(f.officeDate);f.docketDate=normalizeDateOnly(f.docketDate);f.dispatchDate=normalizeDateOnly(f.dispatchDate);if(typeof f.history==='string'){try{f.history=JSON.parse(f.history)}catch(e){f.history=[]}}map.set(String(f.officeNo).toLowerCase(),f);});
+      localList.forEach(f=>{if(!f||!String(f.officeNo||'').trim())return;const k=String(f.officeNo).trim().toLowerCase(),c=map.get(k);if(!c)map.set(k,f);else if((Date.parse(f.updatedAt||'')||0)>(Date.parse(c.updatedAt||'')||0))map.set(k,f);});
+      const merged=Array.from(map.values()).filter(f=>!f.deleted);
+      memoryFiles=merged.filter(f=>!f.archived);
+      const archivedCloud=merged.filter(f=>f.archived);
+      if(archivedCloud.length) { const oldArchived=getArchivedFiles(); const am=new Map(); oldArchived.forEach(f=>am.set(String(f.officeNo||'').trim().toLowerCase(),f)); archivedCloud.forEach(f=>am.set(String(f.officeNo).trim().toLowerCase(),f)); archivedFiles=Array.from(am.values()); saveArchivedFiles(archivedFiles); } else { archivedFiles=getArchivedFiles(); }
+      saveLocalFiles(memoryFiles);
+      document.getElementById('cloudStatusBadge').innerText='🟢 Cloud Synced';
     }catch(err){console.error('Cloud sync failed',err);document.getElementById('cloudStatusBadge').innerText='🔴 Offline Mode (Local Backup)';memoryFiles=getLocalFiles();archivedFiles=getArchivedFiles();renderNoticeBoard();}
     renderDashboard();updateCharts();checkDocketAlerts(true);checkSchoolUrgentAlerts();
   }
@@ -1349,12 +1351,12 @@ function populateAdminSchoolDropdown() {
       return new Date(b.officeDate || 0) - new Date(a.officeDate || 0);
     });
     const totalCount = accessibleFiles.length;
-    const completedCount = accessibleFiles.filter(f => f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது').length;
-    const pendingCount = accessibleFiles.filter(f => f.status !== 'முடிவுற்றது' && f.status !== 'நிராகரிக்கப்பட்டது').length;
+    const completedCount = accessibleFiles.filter(f => (f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி'))).length;
+    const pendingCount = accessibleFiles.filter(f => !(f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி'))).length;
     const urgentCount = accessibleFiles.filter(f => f.priority && f.priority.includes('Urgent')).length;
     const thisMonthCount = accessibleFiles.filter(f => f.officeDate && String(f.officeDate).startsWith(currentMonthStr)).length;
     const overdueCount = accessibleFiles.filter(f => {
-      if (f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது') return false;
+      if ((f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி'))) return false;
       const days = calculateDaysPending(f.officeDate);
       const sla = parseInt(f.slaDays) || 5;
       return days > sla;
@@ -1366,10 +1368,11 @@ function populateAdminSchoolDropdown() {
     document.getElementById('statOverdue').innerText = overdueCount;
     document.getElementById('statThisMonth').innerText = thisMonthCount;
     let displayFiles = accessibleFiles;
-    if (currentFilter === 'PENDING') displayFiles = accessibleFiles.filter(f => f.status !== 'முடிவுற்றது' && f.status !== 'நிராகரிக்கப்பட்டது');
-    if (currentFilter === 'COMPLETED') displayFiles = accessibleFiles.filter(f => f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது');
+    if (currentFilter === 'PENDING') displayFiles = accessibleFiles.filter(f => !(f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி')));
+    if (currentFilter === 'COMPLETED') displayFiles = accessibleFiles.filter(f => (f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி')));
+    if (currentFilter === 'RETURNED') displayFiles = accessibleFiles.filter(f => f.status === 'Return' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || String(f.status||'').includes('காலாவதியாகி'));
     if (currentFilter === 'URGENT') displayFiles = accessibleFiles.filter(f => f.priority && f.priority.includes('Urgent'));
-    if (currentFilter === 'OVERDUE') displayFiles = accessibleFiles.filter(f => (f.status !== 'முடிவுற்றது' && f.status !== 'நிராகரிக்கப்பட்டது') && calculateDaysPending(f.officeDate) > (parseInt(f.slaDays) || 5));
+    if (currentFilter === 'OVERDUE') displayFiles = accessibleFiles.filter(f => !(f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி')) && calculateDaysPending(f.officeDate) > (parseInt(f.slaDays) || 5));
     if (currentFilter === 'THIS_MONTH') displayFiles = accessibleFiles.filter(f => f.officeDate && String(f.officeDate).startsWith(currentMonthStr));
     if (currentCategoryFilter !== 'ALL') {
       displayFiles = displayFiles.filter(f => f.category === currentCategoryFilter);
@@ -1395,7 +1398,7 @@ function populateAdminSchoolDropdown() {
       const sla = parseInt(file.slaDays) || 15;
       const remainingDays = sla - days;
       let ageingBadge = '';
-      if (file.status !== 'முடிவுற்றது' && file.status !== 'நிராகரிக்கப்பட்டது') {
+      if (!(file.status === 'முடிவுற்றது' || file.status === 'நிராகரிக்கப்பட்டது' || file.status === 'திருப்பப்பட்டது' || file.status === 'Return' || String(file.status||'').includes('காலாவதியாகி'))) {
         if (days >= 30) ageingBadge = `<span class="badge-age-red">⏳ ${days} நாட்கள் (30+)</span>`;
         else if (days >= 15) ageingBadge = `<span class="badge-age-orange">⏳ ${days} நாட்கள் (15+)</span>`;
         else ageingBadge = `<span class="badge-age-green">⏳ ${days} நாட்கள்</span>`;
@@ -1443,7 +1446,7 @@ function populateAdminSchoolDropdown() {
               ${file.status === 'முடிவுற்றது' ? `<button class="btn btn-sm btn-archive" onclick="archiveSingleFile(decodeURIComponent('${safeOfficeNo}'))" title="காப்பகத்திற்கு மாற்று">📦 Archive</button>` : ''}
               <button class="btn btn-sm btn-danger" onclick="deleteFile(decodeURIComponent('${safeOfficeNo}'))" title="கோப்பினை நீக்கு">🗑️ நீக்கு</button>
             ` : ''}
-            ${file.deoAttachment ? `<button class="btn btn-sm btn-warning" onclick="viewAttachment(decodeURIComponent('${safeOfficeNo}'))" title="இறுதி ஆணை பதிவிறக்கம்">📥 ஆணை டவுன்லோட்</button>` : ''}
+            ${file.deoAttachment ? `<a class="btn btn-sm btn-warning" href="${String(file.deoAttachment).replace(/"/g,'&quot;')}" target="_blank" rel="noopener noreferrer" download="DEO_Order_${String(file.officeNo).replace(/[^A-Za-z0-9_-]/g,'_')}.pdf" title="இறுதி ஆணை பதிவிறக்கம்">📥 ஆணை டவுன்லோட்</a>` : ''}
           </div>
         </td>
       `;
@@ -1460,7 +1463,7 @@ function populateAdminSchoolDropdown() {
         await fetch(GOOGLE_SHEET_API_URL, {
           method: "POST",
           mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({ action: "save", data: file })
         });
       } catch (err) {}
@@ -1513,17 +1516,10 @@ function populateAdminSchoolDropdown() {
     };
     memoryFiles.unshift(newEntry);
     saveLocalFiles(memoryFiles);
+    renderDashboard();
+    updateCharts();
     document.getElementById('submitBtn').innerText = "கிளவுடில் சேமிக்கப்படுகிறது...";
-    if (GOOGLE_SHEET_API_URL && GOOGLE_SHEET_API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") {
-      try {
-        await fetch(GOOGLE_SHEET_API_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "save", data: newEntry })
-        });
-      } catch (err) {}
-    }
+    await postToCloud('save', stampUpdated(newEntry));
     document.getElementById('newRequestForm').reset();
     document.getElementById('entryOfficeDate').valueAsDate = new Date();
     document.getElementById('submitBtn').innerText = "கோப்பினைப் பதிவு செய் 💾";
@@ -1570,7 +1566,7 @@ function populateAdminSchoolDropdown() {
         await fetch(GOOGLE_SHEET_API_URL, {
           method: "POST",
           mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({ action: "save", data: file })
         });
       } catch (err) {}
@@ -1600,7 +1596,7 @@ function populateAdminSchoolDropdown() {
       fetch(GOOGLE_SHEET_API_URL, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({ action: "save", data: file })
       });
     }
@@ -1982,7 +1978,7 @@ function populateAdminSchoolDropdown() {
       `;
     });
     const formattedDate = formatTamilDate(file.officeDate);
-    const isClosed = file.status === 'முடிவுற்றது' || file.status === 'நிராகரிக்கப்பட்டது';
+    const isClosed = file.status === 'முடிவுற்றது' || file.status === 'நிராகரிக்கப்பட்டது' || file.status === 'திருப்பப்பட்டது' || file.status === 'Return' || String(file.status||'').includes('காலாவதியாகி');
     const curLoc = isClosed ? '-' : file.currentWith;
     const win = window.open('', '_blank');
     if (!win) {
@@ -2248,7 +2244,41 @@ function populateAdminSchoolDropdown() {
     win.document.close();
     setTimeout(() => { win.print(); }, 300);
   }
-  function toggleScorecard() {
+  
+function showScorecardFiles(schoolId, filter){
+  if(currentUser!=='ADMIN') return;
+  currentSpecificSchoolFilter=schoolId;
+  currentFilter=filter==='COMPLETED'?'COMPLETED':filter==='PENDING'?'PENDING':filter==='RETURNED'?'RETURNED':'ALL';
+  currentCategoryFilter='ALL'; startDateFilter=null; endDateFilter=null;
+  renderDashboard();
+  const fs=document.getElementById('filesTableSection') || document.getElementById('filesSection');
+  if(fs) fs.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function generateHandoverSlip(){
+  if(currentUser!=='ADMIN'){alert('Admin Login தேவை.');return;}
+  const pending=memoryFiles.filter(f=>{
+    const closed=f.status==='முடிவுற்றது'||f.status==='நிராகரிக்கப்பட்டது'||f.status==='திருப்பப்பட்டது'||f.status==='Return'||String(f.status||'').includes('காலாவதியாகி');
+    return !closed && !f.archived;
+  });
+  const rows=pending.map((f,i)=>`<tr>
+    <td>${i+1}</td><td><b>${escapeHtml(f.officeNo||'-')}</b><br>${escapeHtml(formatTamilDate(f.officeDate||''))}</td>
+    <td>${escapeHtml(SCHOOL_NAMES[f.schoolId]||f.schoolId||'-')}</td><td>${escapeHtml(f.subject||'-')}</td>
+    <td>${escapeHtml(f.currentWith||'-')}</td><td>${calculateDaysPending(f.officeDate)} நாட்கள்</td><td>${escapeHtml(f.status||'-')}</td>
+  </tr>`).join('');
+  const w=window.open('','_blank');
+  if(!w){alert('Print window திறக்கப்படவில்லை. Browser popup-ஐ Allow செய்யவும்.');return;}
+  w.document.write(`<!doctype html><html lang="ta"><head><meta charset="UTF-8"><title>பொறுப்பு ஒப்படைப்பு</title>
+  <style>body{font-family:Arial,sans-serif;padding:20px}h2,h3{text-align:center;margin:5px}
+  table{width:100%;border-collapse:collapse;margin-top:15px}th,td{border:1px solid #888;padding:7px;font-size:12px;vertical-align:top}th{background:#eee}
+  .sign{margin-top:45px;display:flex;justify-content:space-between}</style></head><body>
+  <h2>பள்ளிக்கல்வித்துறை</h2><h3>மாவட்டக் கல்வி அலுவலகம் (இடைநிலை) ஈரோடு</h3><h3>பிரிவு: அ2 - பொறுப்பு ஒப்படைப்பு அறிக்கை</h3>
+  <table><thead><tr><th>வ.எண்</th><th>கோப்பு எண் / நாள்</th><th>பள்ளி</th><th>கோரிக்கை</th><th>தற்போது யாரிடம்</th><th>நிலுவை</th><th>நிலை</th></tr></thead>
+  <tbody>${rows||'<tr><td colspan="7" style="text-align:center">நிலுவை கோப்புகள் இல்லை.</td></tr>'}</tbody></table>
+  <div class="sign"><div>ஒப்படைத்தவர்<br><br>________________</div><div>பெற்றுக்கொண்டவர்<br><br>________________</div></div></body></html>`);
+  w.document.close();setTimeout(()=>w.print(),300);
+}
+
+function toggleScorecard() {
     const sec = document.getElementById('scorecardSection');
     sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
     if (sec.style.display === 'block') renderScorecard();
@@ -2261,9 +2291,9 @@ function populateAdminSchoolDropdown() {
       const schFiles = memoryFiles.filter(f => f.schoolId === schId);
       const total = schFiles.length;
       if (total === 0) return;
-      const completed = schFiles.filter(f => f.status === 'முடிவுற்றது').length;
-      const pending = schFiles.filter(f => f.status !== 'முடிவுற்றது' && f.status !== 'நிராகரிக்கப்பட்டது').length;
-      const returned = schFiles.filter(f => f.status === 'Return' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது').length;
+      const completed = schFiles.filter(f => f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி')).length;
+      const pending = schFiles.filter(f => !(f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி'))).length;
+      const returned = schFiles.filter(f => f.status === 'Return' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || String(f.status||'').includes('காலாவதியாகி')).length;
       let score = Math.round(((completed / total) * 100) - ((returned / total) * 20));
       if (score < 0) score = 0;
       if (score > 100) score = 100;
@@ -2276,10 +2306,10 @@ function populateAdminSchoolDropdown() {
       tbody.innerHTML += `
         <tr>
           <td><b>${SCHOOL_NAMES[schId]}</b></td>
-          <td><b>${total}</b></td>
-          <td style="color:#16a34a; font-weight:bold;">${completed}</td>
-          <td style="color:#d97706; font-weight:bold;">${pending}</td>
-          <td style="color:#dc2626; font-weight:bold;">${returned}</td>
+          <td><button class="score-link" onclick="showScorecardFiles('${schId}','ALL')"><b>${total}</b></button></td>
+          <td style="color:#16a34a;font-weight:bold;"><button class="score-link" onclick="showScorecardFiles('${schId}','COMPLETED')">${completed}</button></td>
+          <td style="color:#d97706;font-weight:bold;"><button class="score-link" onclick="showScorecardFiles('${schId}','PENDING')">${pending}</button></td>
+          <td style="color:#dc2626;font-weight:bold;"><button class="score-link" onclick="showScorecardFiles('${schId}','RETURNED')">${returned}</button></td>
           <td><b style="font-size:0.95rem;">${score}%</b></td>
           <td><span class="grade-badge ${gradeClass}">${grade}</span></td>
         </tr>
@@ -2398,7 +2428,7 @@ function populateAdminSchoolDropdown() {
     if (file.status === 'முடிவுற்றது') badgeClass = 'badge-completed';
     if (file.status === 'நிராகரிக்கப்பட்டது') badgeClass = 'badge-rejected';
     if (file.status === 'Return' || file.status === 'திருப்பப்பட்டது') badgeClass = 'badge-return';
-    const isClosed = file.status === 'முடிவுற்றது' || file.status === 'நிராகரிக்கப்பட்டது';
+    const isClosed = file.status === 'முடிவுற்றது' || file.status === 'நிராகரிக்கப்பட்டது' || file.status === 'திருப்பப்பட்டது' || file.status === 'Return' || String(file.status||'').includes('காலாவதியாகி');
     const curWithText = isClosed ? '-' : (file.currentWith || 'பிரிவு எழுத்தர்');
     let downloadAttachmentBtn = '';
     if (file.deoAttachment) {
@@ -2430,8 +2460,8 @@ function populateAdminSchoolDropdown() {
   }
   function updateCharts() {
     const accessibleFiles = currentUser === 'ADMIN' ? memoryFiles : memoryFiles.filter(f => f.schoolId === currentUser);
-    const pendingCount = accessibleFiles.filter(f => f.status !== 'முடிவுற்றது' && f.status !== 'நிராகரிக்கப்பட்டது').length;
-    const completedCount = accessibleFiles.filter(f => f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது').length;
+    const pendingCount = accessibleFiles.filter(f => !(f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி'))).length;
+    const completedCount = accessibleFiles.filter(f => (f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return' || String(f.status||'').includes('காலாவதியாகி'))).length;
     const todayStr = new Date().toISOString().slice(0, 10);
     const todayCreated = accessibleFiles.filter(f => f.officeDate === todayStr).length;
     const todayCompleted = accessibleFiles.filter(f => f.status === 'முடிவுற்றது' && f.history && String(f.history).includes(formatTamilDate(todayStr))).length;
