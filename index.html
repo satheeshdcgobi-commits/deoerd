@@ -1273,26 +1273,97 @@ function populateAdminSchoolDropdown() {
     }
   }
   async function syncDataFromCloud() {
-    document.getElementById('cloudStatusBadge').innerText='🟡 Cloud Syncing...';
+    const badge = document.getElementById('cloudStatusBadge');
+    if (badge) badge.innerText = '🟡 கோப்புகள் பெறப்படுகிறது...';
+    let lastError = null;
     try {
       await flushCloudQueue();
-      const response=await fetch(GOOGLE_SHEET_API_URL+'?view=files&t='+Date.now(),{cache:'no-store',redirect:'follow'});
-      if(!response.ok)throw new Error('Cloud HTTP '+response.status);
-      const resData=await response.json();
-      if(resData.notice){resData.notice.date=normalizeDateOnly(resData.notice.date);localStorage.setItem('system_notice_v3',JSON.stringify(resData.notice));renderNoticeBoard(resData.notice);}
-      const cloudList=Array.isArray(resData.files)?resData.files:(resData.data&&Array.isArray(resData.data.files)?resData.data.files:[]);
-      const localList=getLocalFiles(), map=new Map();
-      cloudList.forEach(f=>{if(!f||!String(f.officeNo||'').trim())return;f.officeNo=String(f.officeNo).trim();f.officeDate=normalizeDateOnly(f.officeDate);f.docketDate=normalizeDateOnly(f.docketDate);f.dispatchDate=normalizeDateOnly(f.dispatchDate);if(typeof f.history==='string'){try{f.history=JSON.parse(f.history)}catch(e){f.history=[]}}map.set(String(f.officeNo).toLowerCase(),f);});
-      localList.forEach(f=>{if(!f||!String(f.officeNo||'').trim())return;const k=String(f.officeNo).trim().toLowerCase(),c=map.get(k);if(!c)map.set(k,f);else if((Date.parse(f.updatedAt||'')||0)>(Date.parse(c.updatedAt||'')||0))map.set(k,f);});
-      const merged=Array.from(map.values()).filter(f=>!f.deleted);
-      memoryFiles=merged.filter(f=>!f.archived);
-      const archivedCloud=merged.filter(f=>f.archived);
-      if(archivedCloud.length) { const oldArchived=getArchivedFiles(); const am=new Map(); oldArchived.forEach(f=>am.set(String(f.officeNo||'').trim().toLowerCase(),f)); archivedCloud.forEach(f=>am.set(String(f.officeNo).trim().toLowerCase(),f)); archivedFiles=Array.from(am.values()); saveArchivedFiles(archivedFiles); } else { archivedFiles=getArchivedFiles(); }
+      const urls = [
+        GOOGLE_SHEET_API_URL + '?t=' + Date.now(),
+        GOOGLE_SHEET_API_URL + '?view=files&t=' + Date.now()
+      ];
+      let resData = null;
+      for (const url of urls) {
+        try {
+          const response = await fetch(url, { cache: 'no-store', redirect: 'follow' });
+          if (!response.ok) throw new Error('Cloud HTTP ' + response.status);
+          const text = await response.text();
+          const parsed = JSON.parse(text);
+          if (parsed && (Array.isArray(parsed.files) || (parsed.data && Array.isArray(parsed.data.files)))) {
+            resData = parsed;
+            break;
+          }
+          lastError = new Error('Cloud response-ல் files இல்லை');
+        } catch (e) {
+          lastError = e;
+        }
+      }
+      if (!resData) throw lastError || new Error('Cloud data கிடைக்கவில்லை');
+
+      if (resData.notice) {
+        resData.notice.date = normalizeDateOnly(resData.notice.date);
+        localStorage.setItem('system_notice_v3', JSON.stringify(resData.notice));
+        renderNoticeBoard(resData.notice);
+      }
+
+      const rawCloud = Array.isArray(resData.files) ? resData.files : resData.data.files;
+      const cloudList = rawCloud.filter(f => f && String(f.officeNo || '').trim());
+      const localList = getLocalFiles();
+      const map = new Map();
+
+      cloudList.forEach(f => {
+        const copy = Object.assign({}, f);
+        copy.officeNo = String(copy.officeNo).trim();
+        copy.officeDate = normalizeDateOnly(copy.officeDate);
+        copy.docketDate = normalizeDateOnly(copy.docketDate);
+        copy.dispatchDate = normalizeDateOnly(copy.dispatchDate);
+        copy.omuDate = normalizeDateOnly(copy.omuDate);
+        copy.mmuDate = normalizeDateOnly(copy.mmuDate);
+        if (typeof copy.history === 'string') {
+          try { copy.history = JSON.parse(copy.history); } catch(e) { copy.history = []; }
+        }
+        map.set(copy.officeNo.toLowerCase(), copy);
+      });
+
+      // Local records not yet synced are retained. Newer local records win.
+      localList.forEach(f => {
+        if (!f || !String(f.officeNo || '').trim()) return;
+        const k = String(f.officeNo).trim().toLowerCase();
+        const c = map.get(k);
+        if (!c || (Date.parse(f.updatedAt || '') || 0) > (Date.parse(c.updatedAt || '') || 0)) {
+          map.set(k, f);
+        }
+      });
+
+      const merged = Array.from(map.values()).filter(f => !f.deleted);
+      memoryFiles = merged.filter(f => !f.archived);
+      const archivedCloud = merged.filter(f => f.archived);
+      if (archivedCloud.length) {
+        const oldArchived = getArchivedFiles();
+        const am = new Map();
+        oldArchived.forEach(f => am.set(String(f.officeNo || '').trim().toLowerCase(), f));
+        archivedCloud.forEach(f => am.set(String(f.officeNo || '').trim().toLowerCase(), f));
+        archivedFiles = Array.from(am.values());
+        saveArchivedFiles(archivedFiles);
+      } else {
+        archivedFiles = getArchivedFiles();
+      }
       saveLocalFiles(memoryFiles);
-      document.getElementById('cloudStatusBadge').innerText='🟢 Cloud Synced';
-    }catch(err){console.error('Cloud sync failed',err);document.getElementById('cloudStatusBadge').innerText='🔴 Offline Mode (Local Backup)';memoryFiles=getLocalFiles();archivedFiles=getArchivedFiles();renderNoticeBoard();}
-    renderDashboard();updateCharts();checkDocketAlerts(true);checkSchoolUrgentAlerts();
+
+      if (badge) badge.innerText = '🟢 Cloud Synced — ' + memoryFiles.length + ' கோப்புகள்';
+    } catch (err) {
+      console.error('Cloud sync failed:', err);
+      memoryFiles = getLocalFiles();
+      archivedFiles = getArchivedFiles();
+      if (badge) badge.innerText = memoryFiles.length ? '🟠 Local Backup — ' + memoryFiles.length + ' கோப்புகள்' : '🔴 Cloud இணைப்பு இல்லை';
+      renderNoticeBoard();
+    }
+    renderDashboard();
+    updateCharts();
+    checkDocketAlerts(true);
+    checkSchoolUrgentAlerts();
   }
+
   function setFilter(filterType) {
     currentFilter = filterType;
     ['filterAll', 'filterPending', 'filterCompleted', 'filterUrgent', 'filterOverdue', 'filterMonth'].forEach(id => {
