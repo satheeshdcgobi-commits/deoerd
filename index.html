@@ -10,6 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
   <style>
     :root {
       --gov-blue: #0c4a6e;
@@ -23,6 +24,7 @@
       --ja-color: #16a34a;
       --hm-color: #0d9488;
     }
+
     body {
       font-family: 'Plus Jakarta Sans', 'Mukta Malar', system-ui, sans-serif;
       background: var(--bg);
@@ -30,537 +32,639 @@
       margin: 0;
       padding: 0;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      transition: background 0.3s ease;
     }
-    /* Layout with Sidebar */
-    .app-layout { display: flex; min-height: 100vh; }
-    .sidebar { width: 260px; background: var(--gov-dark); color: white; padding: 20px; box-sizing: border-box; flex-shrink: 0; display: none; flex-direction: column; gap: 15px; }
-    .sidebar h3 { color: #fef08a; font-size: 1rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 8px; margin-bottom: 5px; }
-    .sidebar-menu { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-    .sidebar-menu li a, .sidebar-menu button { background: rgba(255,255,255,0.1); color: white; border: none; width: 100%; text-align: left; padding: 10px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.88rem; text-decoration: none; transition: background 0.2s; }
-    .sidebar-menu li a:hover, .sidebar-menu button:hover { background: rgba(255,255,255,0.2); }
-    .sub-menu { padding-left: 15px; display: flex; flex-direction: column; gap: 5px; margin-top: 5px; }
 
-    .main-content { flex: 1; padding: 20px; box-sizing: border-box; overflow-x: auto; }
-    .container { max-width: 1300px; margin: 0 auto; }
+    body.theme-ADMIN { background: #f8fafc; }
+    body.theme-SCH_1 { background: #f0fdf4; }
+    body.theme-SCH_2 { background: #f0f9ff; }
+    body.theme-SCH_3 { background: #faf5ff; }
+    body.theme-SCH_4 { background: #fffbeb; }
+    body.theme-SCH_5 { background: #f0fdfa; }
+    body.theme-SCH_OTHERS { background: #fefce8; }
+
+    .container { max-width: 1440px; margin: 0 auto; padding: 20px; }
 
     .hero-banner {
       background: linear-gradient(135deg, rgba(8, 47, 73, 0.92) 0%, rgba(12, 74, 110, 0.90) 100%),
                   url('https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
       color: white;
-      padding: 20px 24px;
+      padding: 24px 28px;
       border-radius: 18px;
       margin-bottom: 16px;
       box-shadow: 0 15px 30px -5px rgba(12, 74, 110, 0.35);
+      position: relative;
       border: 1px solid rgba(255, 255, 255, 0.2);
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
       gap: 15px;
     }
-    .banner-left { display: flex; flex-direction: column; gap: 4px; }
-    .banner-center { text-align: center; }
-    .banner-center h1 { margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; }
-    .banner-center p { margin: 3px 0 0 0; font-size: 0.88rem; color: #e0f2fe; }
-    .banner-right { text-align: right; }
+
+    .hero-text h1 {
+      margin: 0;
+      font-size: 1.7rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -0.5px;
+    }
 
     .badge-tn {
       background: rgba(255,255,255,0.18);
       backdrop-filter: blur(10px);
-      padding: 4px 12px;
+      padding: 5px 14px;
       border-radius: 20px;
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       font-weight: 700;
       border: 1px solid rgba(255,255,255,0.3);
       color: #fef08a;
-      display: inline-block;
     }
-    .cloud-status { display: inline-flex; align-items: center; gap: 5px; font-size: 0.72rem; font-weight: bold; color: #bae6fd; margin-top: 4px; }
+
+    .cloud-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.2);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
 
     .kural-card {
       background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
       border: 1px solid #fde68a;
       border-left: 6px solid #d97706;
       border-radius: 14px;
-      padding: 12px 18px;
-      margin-bottom: 16px;
+      padding: 14px 20px;
+      margin-bottom: 20px;
       box-shadow: 0 6px 12px -2px rgba(217, 119, 6, 0.1);
     }
+
     .card {
       background: var(--card-bg);
       border-radius: 16px;
-      padding: 20px;
+      padding: 22px;
       box-shadow: 0 10px 15px -3px rgba(0,0,0,0.04);
       margin-bottom: 20px;
       border: 1px solid var(--border);
+      backdrop-filter: blur(8px);
     }
-    .login-card { max-width: 440px; margin: 30px auto; border-top: 6px solid var(--gov-blue); }
+
+    .login-card {
+      max-width: 460px;
+      margin: 30px auto;
+      box-shadow: 0 25px 35px -5px rgba(0,0,0,0.1);
+      border-top: 6px solid var(--gov-blue);
+    }
 
     h2, h3, h4 { margin-top: 0; color: var(--gov-dark); font-weight: 700; }
-    .form-group { margin-bottom: 12px; }
-    label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.84rem; color: #334155; }
+    .form-group { margin-bottom: 13px; }
+    label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.86rem; color: #334155; }
+    
     input, select, textarea {
-      width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; font-size: 0.9rem; background: #fafafa;
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 0.92rem;
+      background: #fafafa;
     }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
 
     .btn {
-      background: var(--gov-blue); color: white; border: none; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; font-size: 0.82rem; transition: all 0.2s;
+      background: var(--gov-blue);
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      font-size: 0.84rem;
+      transition: all 0.2s ease;
     }
     .btn:hover { background: var(--gov-dark); transform: translateY(-1px); }
     .btn-success { background: #16a34a; }
     .btn-secondary { background: #475569; }
     .btn-danger { background: #dc2626; }
+    .btn-danger:hover { background: #b91c1c; }
     .btn-warning { background: #d97706; color: white; }
     .btn-edit { background: #0891b2; color: white; }
+    .btn-edit:hover { background: #0e7490; }
     .btn-sticker { background: #4f46e5; color: white; }
     .btn-notice { background: #2563eb; color: white; }
     .btn-ja { background: var(--ja-color); color: white; }
     .btn-hm { background: var(--hm-color); color: white; }
     .btn-archive { background: #6366f1; color: white; }
-    .btn-sm { padding: 4px 8px; font-size: 0.75rem; border-radius: 6px; }
+    .btn-sm { padding: 5px 9px; font-size: 0.78rem; border-radius: 6px; }
 
-    .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }
-    .stat-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.2s; }
-    .stat-box:hover, .stat-box.active { border-color: var(--accent); background: #f0f9ff; transform: translateY(-2px); }
-    .stat-box h3 { margin: 0; font-size: 1.6rem; color: var(--gov-blue); font-weight: 800; }
-    .stat-box p { margin: 3px 0 0 0; font-size: 0.8rem; font-weight: 600; color: #475569; }
+    .header-btn-pwd { background: rgba(255,255,255,0.25); color: #fff; border: 1px solid rgba(255,255,255,0.4); }
+    .header-btn-pwd:hover { background: rgba(255,255,255,0.35); }
+    .header-btn-logout { background: #ef4444; color: #fff; }
+    .header-btn-logout:hover { background: #dc2626; }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 6px; }
-    th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.83rem; vertical-align: middle; }
-    th { background: #f8fafc; color: #334155; font-weight: 700; text-transform: uppercase; font-size: 0.72rem; }
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .stat-box:hover, .stat-box.active {
+      border-color: var(--accent);
+      background: #f0f9ff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.15);
+    }
+    .stat-box h3 { margin: 0; font-size: 1.75rem; color: var(--gov-blue); font-weight: 800; }
+    .stat-box p { margin: 4px 0 0 0; font-size: 0.82rem; font-weight: 600; color: #475569; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { padding: 10px 11px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; vertical-align: middle; }
+    th { background: #f8fafc; color: #334155; font-weight: 700; text-transform: uppercase; font-size: 0.74rem; }
     tr.pinned-row { background: #fffbeb !important; border-left: 4px solid #f59e0b; }
     tr:hover { background: rgba(241, 245, 249, 0.7); }
 
-    .badge { padding: 3px 7px; border-radius: 14px; font-size: 0.7rem; font-weight: 700; display: inline-block; }
+    .badge { padding: 4px 8px; border-radius: 16px; font-size: 0.72rem; font-weight: 700; display: inline-block; }
     .badge-pending { background: #fef3c7; color: #92400e; }
     .badge-completed { background: #dcfce7; color: #166534; }
     .badge-rejected { background: #fee2e2; color: #991b1b; }
     .badge-return { background: #fef08a; color: #854d0e; border: 1px solid #fde047; }
-    .badge-cat { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-weight: 700; padding: 2px 6px; border-radius: 6px; font-size: 0.7rem; }
+    .badge-cat { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-weight: 700; padding: 2px 7px; border-radius: 6px; font-size: 0.72rem; }
 
-    .badge-sla-ok { background: #dcfce7; color: #166534; font-weight: 700; font-size: 0.7rem; padding: 2px 5px; border-radius: 4px; }
-    .badge-sla-warn { background: #fef3c7; color: #92400e; font-weight: 700; font-size: 0.7rem; padding: 2px 5px; border-radius: 4px; }
-    .badge-sla-overdue { background: #fee2e2; color: #991b1b; font-weight: 800; font-size: 0.7rem; padding: 2px 5px; border-radius: 4px; }
+    .badge-age-green { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; font-size: 0.70rem; font-weight: 800; padding: 2px 5px; border-radius: 4px; display: inline-block; margin-top: 2px; }
+    .badge-age-orange { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; font-size: 0.70rem; font-weight: 800; padding: 2px 5px; border-radius: 4px; display: inline-block; margin-top: 2px; }
+    .badge-age-red { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; font-size: 0.70rem; font-weight: 800; padding: 2px 5px; border-radius: 4px; display: inline-block; margin-top: 2px; }
 
-    .sticky-pin-card {
-      background: #fef08a; color: #713f12; padding: 12px 16px; border-radius: 4px; width: 250px; box-shadow: 3px 4px 10px rgba(0,0,0,0.15); position: relative; font-family: 'Comic Sans MS', cursive, sans-serif, Arial; transform: rotate(1deg); border-top: 5px solid #facc15; box-sizing: border-box; flex-shrink: 0;
-    }
-    .sticky-pin-card::before { content: "📌"; position: absolute; top: -11px; left: 50%; transform: translateX(-50%); font-size: 1.2rem; }
+    .badge-sla-ok { background: #dcfce7; color: #166534; font-weight: 700; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; }
+    .badge-sla-warn { background: #fef3c7; color: #92400e; font-weight: 700; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; }
+    .badge-sla-overdue { background: #fee2e2; color: #991b1b; font-weight: 800; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; }
 
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; }
-    .modal-content { background: white; padding: 22px; border-radius: 16px; width: 90%; max-width: 700px; max-height: 85vh; overflow-y: auto; }
-    
-    .grade-badge { font-weight: 800; padding: 3px 7px; border-radius: 6px; font-size: 0.78rem; }
+    .grade-badge { font-weight: 800; padding: 3px 8px; border-radius: 6px; font-size: 0.80rem; }
     .grade-a-plus { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
     .grade-a { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
     .grade-b { background: #fef3c7; color: #b45309; border: 1px solid #fde047; }
     .grade-c { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
 
-    @media (max-width: 900px) {
-      .app-layout { flex-direction: column; }
-      .sidebar { width: 100%; }
-      .hero-banner { grid-template-columns: 1fr; text-align: center; }
-      .banner-right { text-align: center; }
+    /* Sticky Note Style for School Circular */
+    .sticky-pin-card {
+      background: #fef08a;
+      color: #713f12;
+      padding: 15px 20px;
+      border-radius: 4px;
+      width: 260px;
+      box-shadow: 3px 4px 10px rgba(0,0,0,0.15);
+      position: relative;
+      font-family: 'Comic Sans MS', cursive, sans-serif, Arial;
+      transform: rotate(1deg);
+      border-top: 5px solid #facc15;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      box-sizing: border-box;
+      flex-shrink: 0;
+    }
+    .sticky-pin-card::before {
+      content: "📌";
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.3rem;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    }
+    .sticky-pin-card:hover {
+      transform: rotate(0deg) scale(1.02);
+      transition: transform 0.2s ease;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 720px;
+      max-height: 88vh;
+      overflow-y: auto;
     }
   </style>
 </head>
 <body class="theme-ADMIN">
 
-<div class="app-layout">
-  <!-- இடதுபுற Sidebar (அட்மின் லாகின் செய்த பிறகு மட்டுமே தெரியும்) -->
-  <nav id="appSidebar" class="sidebar">
-    <h3>⚙️ நிர்வாகப் பலகை (Sidebar)</h3>
-    <ul class="sidebar-menu">
-      <li>
-        <button onclick="toggleSubMenu('noticeSubMenu')">📌 அறிவிப்பு ▾</button>
-        <ul id="noticeSubMenu" class="sub-menu" style="display:none;">
-          <li><button onclick="openNoticeModal()">✏️ புதிய அறிவிப்பு</button></li>
-          <li><button onclick="scrollToSection('adminSchoolCircularPanel')">👑 Admin Panel</button></li>
-        </ul>
-      </li>
-      <li><a href="#" onclick="switchSidebarTab('schoolLogin')">🏫 பள்ளி Login</a></li>
-      <li><a href="#" onclick="switchSidebarTab('sectionAdmin')">👑 பிரிவு எழுத்தர் மேலாண்மை</a></li>
-      <li><a href="#" onclick="switchSidebarTab('newEntry')">➕ புதிய கோரிக்கை மனு பதிவு</a></li>
-      <li><a href="#" onclick="openPwdModal()">🔑 கடவுச்சொல்</a></li>
-      <li><a href="#" onclick="logout()" style="background:#dc2626;">🚪 வெளியேறு</a></li>
-    </ul>
-  </nav>
+<div class="container">
 
-  <div class="main-content">
-    <div class="container">
-
-      <!-- முகப்பு பேனர் -->
-      <div class="hero-banner">
-        <div class="banner-left">
-          <span class="badge-tn">பிரிவு : அ2</span>
-          <div class="cloud-status" id="cloudStatusBadge">🟢 Cloud Synced</div>
-        </div>
-        <div class="banner-center">
-          <h1>மாவட்டக் கல்வி அலுவலகம் (இடைநிலை) ஈரோடு</h1>
-          <p>பள்ளிக்கல்வித்துறை கோப்பு கண்காணிப்பு & ஆய்வுக் கட்டுப்பாட்டு தளம்</p>
-        </div>
-        <div class="banner-right">
-          <div style="font-weight: 700; font-size:0.9rem; margin-bottom: 6px; color:#fef08a;">
-            உதவியாளர்: து.சதீஷ்குமார்
-          </div>
-          <div id="headerUserActions" style="display: none; justify-content: flex-end; gap: 6px;">
-            <button class="btn btn-sm header-btn-pwd" onclick="openPwdModal()">🔑 கடவுச்சொல்</button>
-            <button class="btn btn-sm header-btn-logout" onclick="logout()">🚪 வெளியேறு</button>
-          </div>
-        </div>
+  <!-- முகப்பு பேனர் -->
+  <div class="hero-banner">
+    <div class="hero-text">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom: 6px;">
+        <span class="badge-tn">பிரிவு : அ2</span>
+        <span class="cloud-status" id="cloudStatusBadge">🟢 Cloud Synced</span>
       </div>
+    </div>
+    
+    <div style="text-align: center;">
+      <h1 style="margin: 0; font-size: 1.5rem; font-weight: 800; color: #fff;">மாவட்டக் கல்வி அலுவலகம் (இடைநிலை) ஈரோடு</h1>
+      <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: #e0f2fe;">பள்ளிக்கல்வித்துறை கோப்பு கண்காணிப்பு தளம்</p>
+    </div>
 
-      <!-- புதிய அறிவிப்புப் பலகை மற்றும் பள்ளி சுற்றறிக்கை ஸ்டிக்கி நோட் பகுதி -->
-      <div style="margin: 10px 0;" id="noticeSectionAnchor">
-        <div style="display: flex; justify-content: space-between; align-items: stretch; gap: 15px; flex-wrap: wrap;">
-          <div style="flex: 1; min-width: 280px; background: #fff; border-left: 4px solid #0284c7; padding: 14px 18px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
-                <span style="font-weight: 800; color: #1e40af; font-size: 0.95rem;">📌 புதிய அறிவிப்பு</span>
-                <span id="noticeDateTag" style="background: #bfdbfe; color: #1e3a8a; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem;">தேதி: --/--/----</span>
-              </div>
-              <p id="noticeContentText" style="margin: 0; font-size: 0.92rem; color: #1e293b; line-height: 1.5; font-weight: 500;">மாவட்ட கல்வி அலுவலக அறிவிப்புப் பலகைச் செய்திகள் இங்கே தோன்றும்...</p>
-            </div>
-            <div id="adminNoticeAction" style="display: none; margin-top: 10px; display:flex; gap:8px;">
-              <button class="btn btn-notice btn-sm" onclick="openNoticeModal()">✏️ புதிய அறிவிப்பு</button>
-              <button class="btn btn-ja btn-sm" onclick="broadcastNoticeToSchools()">💬 WA Broadcast</button>
-            </div>
-          </div>
-
-          <div id="schoolStickyNoteSection" class="sticky-pin-card" style="display: none;">
-            <div style="font-size: 0.75rem; font-weight: bold; color: #b45309; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">🏫 உங்கள் பள்ளிக்கான சுற்றறிக்கை:</div>
-            <div id="schoolStickyNoticeContent" style="font-size: 0.90rem; line-height: 1.4;">
-              உங்களுக்கு புதிய சுற்றறிக்கைகள் எதுவும் இல்லை.
-            </div>
-          </div>
-        </div>
+    <div style="text-align: right;">
+      <div style="color:#fef08a; font-weight: 700; font-size:0.9rem; margin-bottom: 6px;">
+        உதவியாளர்: து.சதீஷ்குமார்
       </div>
-
-      <!-- தினமொரு திருக்குறள் -->
-      <div class="kural-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <div style="font-size:0.92rem; font-weight:800; color:#92400e;">
-            <span>📜 தினமொரு திருக்குறள்</span>
-            <span id="kuralNumberTag" style="background:#fde68a; padding:2px 8px; border-radius:12px; font-size:0.75rem; margin-left:6px;"></span>
-          </div>
-          <small id="kuralAthikaramTag" style="font-weight:700; color:#b45309;"></small>
-        </div>
-        <p id="kuralLineText" style="font-size:0.95rem; font-weight:700; color:#78350f; line-height:1.5; margin:0 0 4px 0;"></p>
-        <p id="kuralMeaningText" style="font-size:0.85rem; color:#451a03; margin:0;"></p>
+      <div id="headerUserActions" style="display: none; justify-content: flex-end; gap: 6px;">
+        <button class="btn btn-sm header-btn-pwd" onclick="openPwdModal()">🔑 கடவுச்சொல்</button>
+        <button class="btn btn-sm header-btn-logout" onclick="logout()">🚪 வெளியேறு</button>
       </div>
+    </div>
+  </div>
 
-      <!-- உள்நுழைவு திரை -->
-      <div id="loginSection" class="card login-card">
-        <h2 style="text-align: center; margin-bottom: 6px;">🏛️ போர்ட்டல் உள்நுழைவு</h2>
-        <p style="text-align: center; color: #64748b; font-size: 0.88rem; margin-bottom: 20px;">உங்கள் பள்ளி அல்லது பிரிவு எழுத்தர் கணக்கைத் தேர்ந்தெடுக்கவும்</p>
+  <!-- புதிய அறிவிப்புப் பலகை மற்றும் பள்ளி சுற்றறிக்கை ஸ்டிக்கி நோட் பகுதி -->
+  <div style="margin: 10px 0;">
+    <div style="display: flex; justify-content: space-between; align-items: stretch; gap: 15px; flex-wrap: wrap;">
+      
+      <!-- இடதுபுறம் முக்கிய அறிவிப்புப் பலகை (அட்மினுக்கு மட்டும் எடிட் பட்டன் தெரியும்) -->
+      <div style="flex: 1; min-width: 280px; background: #fff; border-left: 4px solid #0284c7; padding: 14px 18px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
+            <span style="font-weight: 800; color: #1e40af; font-size: 0.95rem;">📌 புதிய அறிவிப்பு</span>
+            <span id="noticeDateTag" style="background: #bfdbfe; color: #1e3a8a; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem;">தேதி: --/--/----</span>
+          </div>
+          <p id="noticeContentText" style="margin: 0; font-size: 0.92rem; color: #1e293b; line-height: 1.5; font-weight: 500;">மாவட்ட கல்வி அலுவலக அறிவிப்புப் பலகைச் செய்திகள் இங்கே தோன்றும்...</p>
+        </div>
         
-        <div class="form-group">
-          <label>பயனர் தேர்வு (User Type):</label>
-          <select id="userSelect" onchange="previewTheme(this.value)">
-            <option value="ADMIN">👑 பிரிவு எழுத்தர் (Section Assistant) - பிரிவு அ2</option>
-            <option value="SCH_1">🏫 பெரியசாமி உயர்நிலைப்பள்ளி அம்மாபேட்டை</option>
-            <option value="SCH_2">🏫 புனித செபஸ்தியார் உயர்நிலைப்பள்ளி நகலூர்</option>
-            <option value="SCH_3">🏫 புனித மைக்கேல் மேல்நிலைப்பள்ளி, மைக்கேல்பாளையம்</option>
-            <option value="SCH_4">🏫 சக்தி மேல்நிலைப்பள்ளி நாச்சிமுத்துபுரம்</option>
-            <option value="SCH_5">🏫 கொமரப்பா செங்குந்தர் மேல்நிலைப்பள்ளி சென்னிமலை</option>
-            <option value="SCH_OTHERS">🏢 Others (இதர பள்ளிகள் / அலுவலகங்கள்)</option>
-          </select>
+        <!-- அட்மின் மட்டும் அறிவிப்பை மாற்றும் பகுதி -->
+        <div id="adminNoticeAction" style="display: none; margin-top: 10px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-notice btn-sm" onclick="openNoticeModal()">✏️ புதிய அறிவிப்பு</button>
+          <button class="btn btn-ja btn-sm" onclick="broadcastNoticeToSchools()">💬 WhatsApp Broadcast</button>
         </div>
-        <div class="form-group">
-          <label>கடவுச்சொல் (Password):</label>
-          <input type="password" id="passwordInput" placeholder="கடவுச்சொல்லை உள்ளிடவும்">
-        </div>
-        <button class="btn" style="width: 100%; justify-content: center; padding: 11px; font-size: 0.95rem;" onclick="login()">பாதுகாப்பாக உள்நுழைக ➜</button>
       </div>
 
-      <!-- முதன்மை டாஷ்போர்டு -->
-      <div id="dashboardSection" style="display: none;">
-        <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding: 12px 18px;">
-          <div>
-            <h2 id="currentUserHeading" style="margin:0; font-size:1.2rem;">டாஷ்போர்டு</h2>
-            <small id="userRoleText" style="color: #64748b; font-weight: 500;"></small>
-          </div>
-          <div style="display:flex; gap: 6px; flex-wrap: wrap;">
-            <button class="btn btn-secondary btn-sm" onclick="syncDataFromCloud()">🔄 Refresh Cloud</button>
-            <button class="btn btn-secondary btn-sm" id="docketBtn" onclick="toggleDocketCalendar()">📅 நாள்குறிப்பு பலகை</button>
-            <button class="btn btn-secondary btn-sm" id="scorecardBtn" style="display:none;" onclick="toggleScorecard()">📊 மதிப்பீட்டு அட்டை</button>
-            <button class="btn btn-secondary btn-sm" id="chartsBtn" onclick="toggleCharts()">📈 வரைபடம்</button>
-            <button class="btn btn-success btn-sm" onclick="exportToExcel()">📊 Excel (அனைத்தும்)</button>
-            <button class="btn btn-warning btn-sm" onclick="exportPendingToExcel()" id="exportPendingBtn" style="display:none;">📊 Excel (நிலுவை மட்டும்)</button>
-            <button class="btn btn-archive btn-sm" id="archiveBtn" style="display:none;" onclick="openArchiveModal()">📦 காப்பகம் (Archive)</button>
-            <button class="btn btn-warning btn-sm" id="monthlyReportBtn" style="display:none;" onclick="generateMonthlyArrearReport()">📑 மாதாந்திர அறிக்கை</button>
-            <button class="btn btn-danger btn-sm" id="adminConsolidatedPendingBtn" style="display:none;" onclick="generateAdminConsolidatedPendingSlip()">📋 ஒட்டுமொத்த நிலுவை அறிக்கை</button>
-            <button class="btn btn-secondary btn-sm" id="handoverBtn" style="display:none;" onclick="generateHandoverSlip()">📋 பொறுப்பு ஒப்படைப்பு</button>
-            <button class="btn btn-secondary btn-sm" id="schoolPendingSlipBtn" style="display:none;" onclick="generateSchoolPendingSlip()">🖨️ நிலுவை அறிக்கை அச்சு</button>
-            <button class="btn btn-secondary btn-sm" id="contactsSettingsBtn" style="display:none;" onclick="openContactsModal()">📞 JA & HM</button>
-          </div>
-        </div>
-
-        <!-- அட்மின் கட்டுப்பாட்டுப் பலகம் மற்றும் 'School Circular' பகுதி -->
-        <div id="adminSchoolCircularPanel" class="card" style="display: none; background: #f8fafc; border: 1px solid #cbd5e1;">
-          <h3 style="margin-top: 0; color: var(--gov-dark); font-size: 1.1rem;">அட்மின் கட்டுப்பாட்டுப் பலகம் (Admin Panel)</h3>
-          <p style="margin: 0 0 15px 0; font-size: 0.85rem; color: #64748b;">பிரிவு எழுத்தர் - பிரிவு அ2</p>
-          
-          <div style="border-top: 1px solid var(--border); padding-top: 15px;">
-            <h4 style="color: #0f172a; font-size: 1rem; margin-bottom: 10px;">📢 School Circular (பள்ளி சுற்றறிக்கை அனுப்புதல்)</h4>
-            <div style="display: grid; gap: 10px;">
-              <div>
-                <label>பள்ளியைத் தேர்ந்தெடுக்கவும்:</label>
-                <select id="adminCircularSchoolSelect" class="form-control">
-                  <option value="">-- பள்ளியைத் தேர்ந்தெடுக்கவும் --</option>
-                </select>
-              </div>
-              <div>
-                <label>சுற்றறிக்கை செய்தி:</label>
-                <textarea id="adminCircularMsgInput" rows="3" placeholder="குறிப்பிட்ட பள்ளிக்கு அனுப்ப வேண்டிய செய்தியை இங்கே தட்டச்சு செய்யவும்..."></textarea>
-              </div>
-              <div>
-                <button class="btn btn-primary btn-sm" onclick="saveAdminSchoolCircular()">📤 சுற்றறிக்கையைப் பதிவு செய்</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- பள்ளி செயல்பாட்டு மதிப்பீட்டு அட்டை -->
-        <div id="scorecardSection" class="card" style="display: none; border-left: 6px solid #0284c7; background: #f8fafc;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <h3 style="margin:0; color:#0369a1;">📊 பள்ளி வாரியான செயல்பாட்டு மதிப்பீட்டு அட்டை (School Compliance & Performance Scorecard)</h3>
-            <button class="btn btn-sm btn-secondary" onclick="toggleScorecard()">மூடு ✕</button>
-          </div>
-          <p style="margin:0 0 12px 0; font-size:0.84rem; color:#475569;">மதிப்புகளின் மீது கிளிக் செய்து சம்மந்தப்பட்ட கோப்பு பட்டியலைக் காணலாம்:</p>
-          <div style="overflow-x:auto;">
-            <table>
-              <thead>
-                <tr>
-                  <th>பள்ளியின் பெயர்</th>
-                  <th>மொத்த மனுக்கள்</th>
-                  <th>முடிவுற்றவை</th>
-                  <th>நிலுவை</th>
-                  <th>Return / நிராகரிப்பு</th>
-                  <th>செயல்பாட்டு மதிப்பெண் (Score)</th>
-                  <th>மதிப்பீடு (Grade)</th>
-                </tr>
-              </thead>
-              <tbody id="scorecardTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- நாள்குறிப்பு & நினைவூட்டல் பலகை -->
-        <div id="docketCalendarSection" class="card" style="display:none; border-left: 6px solid #d97706; background: #fffdf5;">
-          <h3 style="color:#b45309; margin-bottom:6px;">📅 உதவியாளர் நாள்குறிப்பு & மறுபார்வை நினைவூட்டல் (Follow-up Docket)</h3>
-          <p style="font-size:0.85rem; color:#78350f; margin-top:0;">இன்று அல்லது முந்தைய நாட்களில் மறுபரிசீலனைக்குக் குறித்த கோப்புகள்:</p>
-          <div id="docketReminderList" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:10px;"></div>
-        </div>
-
-        <!-- MIS வரைபடங்கள் -->
-        <div id="chartsSection" class="card" style="display: none;">
-          <h3>📊 கோப்பு நிலவர பகுப்பாய்வு & நகர்வு வரைபடம்</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom:16px;">
-            <div style="background:#f8fafc; padding:12px; border-radius:10px; text-align:center;">
-              <h4 style="font-size:0.9rem; margin-bottom:8px;">கோப்பு நிலைகள்</h4>
-              <canvas id="statusChart" style="max-height:190px;"></canvas>
-            </div>
-            <div style="background:#f8fafc; padding:12px; border-radius:10px; text-align:center;">
-              <h4 style="font-size:0.9rem; margin-bottom:8px;">மனு வகைப்பாடு நிலவரம்</h4>
-              <canvas id="categoryChart" style="max-height:190px;"></canvas>
-            </div>
-          </div>
-          <div style="background:#f0f9ff; padding:14px; border-radius:10px; border:1px solid #bae6fd;">
-            <h4 style="color:#0369a1; margin-bottom:6px;">📈 தினசரி கோப்புப் பரிமாற்ற சுருக்கம்</h4>
-            <p id="dailySummaryText" style="margin:0; font-size:0.88rem; color:#0369a1; font-weight:600;"></p>
-          </div>
-        </div>
-
-        <!-- புள்ளிவிவரக் கட்டங்கள் -->
-        <div class="stats-bar">
-          <div class="stat-box active" onclick="setFilter('ALL')" id="filterAll">
-            <h3 id="statTotal">0</h3>
-            <p>மொத்தக் கோப்புகள்</p>
-          </div>
-          <div class="stat-box" onclick="setFilter('PENDING')" id="filterPending">
-            <h3 id="statPending" style="color: #d97706;">0</h3>
-            <p>நிலுவையில் உள்ளவை</p>
-          </div>
-          <div class="stat-box" onclick="setFilter('COMPLETED')" id="filterCompleted">
-            <h3 id="statCompleted" style="color: #16a34a;">0</h3>
-            <p>முடிவுற்றவை / நிராகரிப்பு</p>
-          </div>
-          <div class="stat-box" onclick="setFilter('URGENT')" id="filterUrgent">
-            <h3 id="statUrgent" style="color: #dc2626;">0</h3>
-            <p>🚨 அவசரக் கோப்புகள்</p>
-          </div>
-          <div class="stat-box" onclick="setFilter('OVERDUE')" id="filterOverdue">
-            <h3 id="statOverdue" style="color: #b91c1c;">0</h3>
-            <p>⚠️ காலாவதியானவை</p>
-          </div>
-          <div class="stat-box" onclick="setFilter('THIS_MONTH')" id="filterMonth">
-            <h3 id="statThisMonth" style="color: #0284c7;">0</h3>
-            <p>📅 இந்த மாத மனுக்கள்</p>
-          </div>
-        </div>
-
-        <!-- பள்ளி பயனர் தேடல் பெட்டி -->
-        <div id="schoolSearchContainer" class="card" style="display: none; border-left: 5px solid var(--accent);">
-          <h3>🔍 உங்கள் பள்ளி பதிவேடு எண் கொண்டு நிலை அறிதல்</h3>
-          <div style="display:flex; gap: 10px;">
-            <input type="text" id="trackSchoolRegNo" placeholder="பதிவேடு எண் உள்ளிடவும் (எ.கா. ந.க. 12/2026)">
-            <button class="btn" onclick="trackSingleFile()">தேடு</button>
-          </div>
-          <div id="trackResult"></div>
-        </div>
-
-        <!-- புதிய மனு பதிவு (Section Assistant Only) -->
-        <div id="adminEntryContainer" class="card" style="display: none; border-top: 4px solid var(--gov-blue);">
-          <h3 style="color:var(--gov-blue);">+ புதிய கோரிக்கை மனு பதிவு (பிரிவு அ2)</h3>
-          <form id="newRequestForm" onsubmit="addRequest(event)">
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
-              <div class="form-group">
-                <label>அலுவலக கோப்பு எண்:</label>
-                <input type="text" id="entryOfficeNo" placeholder="எ.கா. A2/1045/2026" required>
-              </div>
-              <div class="form-group">
-                <label>அலுவலக தேதி:</label>
-                <input type="date" id="entryOfficeDate" required>
-              </div>
-              <div class="form-group">
-                <label>முந்தைய கோப்பு ந.க. எண்:</label>
-                <input type="text" id="entryPrevRefNo" placeholder="எ.கா. ந.க. 450/A2/2025">
-              </div>
-              <div class="form-group">
-                <label>பள்ளி / அலுவலக பெயர்:</label>
-                <select id="entrySchool" required>
-                  <option value="SCH_1">பெரியசாமி உயர்நிலைப்பள்ளி அம்மாபேட்டை</option>
-                  <option value="SCH_2">புனித செபஸ்தியார் உயர்நிலைப்பள்ளி நகலூர்</option>
-                  <option value="SCH_3">புனித மைக்கேல் மேல்நிலைப்பள்ளி, மைக்கேல்பாளையம்</option>
-                  <option value="SCH_4">சக்தி மேல்நிலைப்பள்ளி நாச்சிமுத்துபுரம்</option>
-                  <option value="SCH_5">கொமரப்பா செங்குந்தர் மேல்நிலைப்பள்ளி சென்னிமலை</option>
-                  <option value="SCH_OTHERS">Others (இதர பள்ளிகள் / அலுவலகங்கள்)</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>பள்ளி பதிவேடு எண் (Optional):</label>
-                <input type="text" id="entrySchoolRegNo" placeholder="எ.கா. ந.க.எண் 12/2026">
-              </div>
-              <div class="form-group">
-                <label>அலமாரி இருப்பிடம் (Rack / Bundle):</label>
-                <input type="text" id="entryRackLocation" placeholder="எ.கா. Rack 3 / Bundle A">
-              </div>
-              <div class="form-group">
-                <label>தீர்வு காலக்கெடு (SLA Days):</label>
-                <select id="entrySlaDays">
-                  <option value="5">5 நாட்கள்</option>
-                  <option value="10">10 நாட்கள்</option>
-                  <option value="15">15 நாட்கள்</option>
-                  <option value="20">20 நாட்கள்</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>மனு வகைப்பாடு (Category):</label>
-                <select id="entryCategory" required>
-                  <option value="ML">ML (மருத்துவ விடுப்பு)</option>
-                  <option value="EL">EL (ஈட்டிய விடுப்பு)</option>
-                  <option value="Surrender">Surrender (விடுப்பு ஒப்படைப்பு)</option>
-                  <option value="TPF Part Final">TPF Part Final</option>
-                  <option value="Retirement Benefits">Retirement Benefits</option>
-                  <option value="Promotion">Promotion (பதவி உயர்வு)</option>
-                  <option value="Direct Appointment">Direct Appointment</option>
-                  <option value="Relieving">Relieving (பணிவிடுவிப்பு)</option>
-                  <option value="Salary">Salary (ஊதியம்)</option>
-                  <option value="Court Case">Court Case</option>
-                  <option value="Meeting Agenda">Meeting Agenda</option>
-                  <option value="Common">Common (பொதுவானவை)</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>முன்னுரிமை (Priority):</label>
-                <select id="entryPriority">
-                  <option value="சாதாரணமானது (Normal)">சாதாரணமானது (Normal)</option>
-                  <option value="முக்கியமானது (Important)">முக்கியமானது (Important)</option>
-                  <option value="மிக அவசரம் (Urgent)">🚨 மிக அவசரம் (Urgent)</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>கோரிக்கை விவரம் & பொருள்:</label>
-              <textarea id="entrySubject" rows="2" placeholder="கோரிக்கையின் தலைப்பு மற்றும் விவரங்களை உள்ளிடவும்..." required></textarea>
-            </div>
-            <button type="submit" id="submitBtn" class="btn">கோப்பினைப் பதிவு செய் 💾</button>
-          </form>
-        </div>
-
-        <!-- கோப்புகள் அட்டவணை -->
-        <div class="card" id="filesListAnchor">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              <h3 id="listHeading" style="margin:0;">📋 கோப்புகள் பட்டியல்</h3>
-              
-              <select id="schoolSpecificFilter" onchange="filterBySpecificSchool(this.value)" style="padding:6px 8px; font-size:0.82rem; max-width:200px; display:none;">
-                <option value="ALL">அனைத்துப் பள்ளிகள்</option>
-                <option value="SCH_1">பெரியசாமி உ.நி.பள்ளி</option>
-                <option value="SCH_2">புனித செபஸ்தியார் உ.நி.பள்ளி</option>
-                <option value="SCH_3">புனித மைக்கேல் மே.நி.பள்ளி</option>
-                <option value="SCH_4">சக்தி மே.நி.பள்ளி</option>
-                <option value="SCH_5">கொமரப்பா செங்குந்தர் மே.நி.பள்ளி</option>
-                <option value="SCH_OTHERS">இதர பள்ளிகள் (Others)</option>
-              </select>
-
-              <select id="categoryFilter" onchange="filterByCategory(this.value)" style="padding:6px 8px; font-size:0.82rem; max-width:160px;">
-                <option value="ALL">அனைத்து வகைப்பாடுகள்</option>
-                <option value="ML">ML</option>
-                <option value="EL">EL</option>
-                <option value="Surrender">Surrender</option>
-                <option value="TPF Part Final">TPF Part Final</option>
-                <option value="Retirement Benefits">Retirement Benefits</option>
-                <option value="Promotion">Promotion</option>
-                <option value="Direct Appointment">Direct Appointment</option>
-                <option value="Relieving">Relieving</option>
-                <option value="Salary">Salary</option>
-                <option value="Court Case">Court Case</option>
-                <option value="Meeting Agenda">Meeting Agenda</option>
-                <option value="Common">Common</option>
-              </select>
-
-              <!-- தேதி Filter -->
-              <div style="display:flex; align-items:center; gap:4px;">
-                <input type="date" id="filterStartDate" style="padding:4px 6px; font-size:0.78rem; width:125px;">
-                <span>-</span>
-                <input type="date" id="filterEndDate" style="padding:4px 6px; font-size:0.78rem; width:125px;">
-                <button class="btn btn-sm btn-secondary" onclick="applyDateRangeFilter()">தேதி Filter</button>
-                <button class="btn btn-sm btn-danger" onclick="resetDateRangeFilter()" title="தேதி வடிகட்டலை ரத்து செய்">✕</button>
-              </div>
-            </div>
-            
-            <input type="text" id="liveSearchInput" onkeyup="filterLiveTable()" placeholder="🔍 விரைவுத் தேடல்..." style="max-width:220px; padding:6px 10px; font-size:0.86rem;">
-          </div>
-          
-          <div style="overflow-x:auto;">
-            <table id="mainFilesTable">
-              <thead>
-                <tr>
-                  <th>முக்கியத்துவம்</th>
-                  <th>அலுவலக எண், தேதி & முந்தைய ந.க.</th>
-                  <th>பள்ளி பதிவேடு எண்</th>
-                  <th id="schoolColHeader">பள்ளியின் பெயர்</th>
-                  <th>மனு வகை</th>
-                  <th>கோரிக்கை விவரம் & குறிப்புகள் (Quick Notes)</th>
-                  <th>இருப்பிடம் (Rack)</th>
-                  <th>காலக்கெடு (SLA)</th>
-                  <th>யாரிடம் நிலுவை</th>
-                  <th>நிலை</th>
-                  <th>செயல்பாடுகள்</th>
-                </tr>
-              </thead>
-              <tbody id="filesTableBody"></tbody>
-            </table>
-          </div>
+      <!-- வலதுபுறம் பள்ளி லாகின் செய்யும்போது மட்டும் தெரியும் 'Pinned Sticky Notes' (School Circular) பகுதி -->
+      <div id="schoolStickyNoteSection" class="sticky-pin-card" style="display: none;">
+        <div style="font-size: 0.75rem; font-weight: bold; color: #b45309; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">🏫 உங்கள் பள்ளிக்கான சுற்றறிக்கை:</div>
+        <div id="schoolStickyNoticeContent" style="font-size: 0.90rem; line-height: 1.4;">
+          உங்களுக்கு புதிய சுற்றறிக்கைகள் எதுவும் இல்லை.
         </div>
       </div>
 
     </div>
   </div>
+
+  <!-- தினமொரு திருக்குறள் -->
+  <div class="kural-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+      <div style="font-size:0.92rem; font-weight:800; color:#92400e;">
+        <span>📜 தினமொரு திருக்குறள்</span>
+        <span id="kuralNumberTag" style="background:#fde68a; padding:2px 8px; border-radius:12px; font-size:0.75rem; margin-left:6px;"></span>
+      </div>
+      <small id="kuralAthikaramTag" style="font-weight:700; color:#b45309;"></small>
+    </div>
+    <p id="kuralLineText" style="font-size:0.95rem; font-weight:700; color:#78350f; line-height:1.5; margin:0 0 4px 0;"></p>
+    <p id="kuralMeaningText" style="font-size:0.85rem; color:#451a03; margin:0;"></p>
+  </div>
+
+  <!-- உள்நுழைவு திரை -->
+  <div id="loginSection" class="card login-card">
+    <h2 style="text-align: center; margin-bottom: 6px;">🏛️ போர்ட்டல் உள்நுழைவு</h2>
+    <p style="text-align: center; color: #64748b; font-size: 0.88rem; margin-bottom: 20px;">உங்கள் பள்ளி அல்லது பிரிவு எழுத்தர் கணக்கைத் தேர்ந்தெடுக்கவும்</p>
+    
+    <div class="form-group">
+      <label>பயனர் தேர்வு (User Type):</label>
+      <select id="userSelect" onchange="previewTheme(this.value)">
+        <option value="ADMIN">👑 பிரிவு எழுத்தர் (Section Assistant) - பிரிவு அ2</option>
+        <option value="SCH_1">🏫 பெரியசாமி உயர்நிலைப்பள்ளி அம்மாபேட்டை</option>
+        <option value="SCH_2">🏫 புனித செபஸ்தியார் உயர்நிலைப்பள்ளி நகலூர்</option>
+        <option value="SCH_3">🏫 புனித மைக்கேல் மேல்நிலைப்பள்ளி, மைக்கேல்பாளையம்</option>
+        <option value="SCH_4">🏫 சக்தி மேல்நிலைப்பள்ளி நாச்சிமுத்துபுரம்</option>
+        <option value="SCH_5">🏫 கொமரப்பா செங்குந்தர் மேல்நிலைப்பள்ளி சென்னிமலை</option>
+        <option value="SCH_OTHERS">🏢 Others (இதர பள்ளிகள் / அலுவலகங்கள்)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>கடவுச்சொல் (Password):</label>
+      <input type="password" id="passwordInput" placeholder="கடவுச்சொல்லை உள்ளிடவும்">
+    </div>
+    <button class="btn" style="width: 100%; justify-content: center; padding: 11px; font-size: 0.95rem;" onclick="login()">பாதுகாப்பாக உள்நுழைக ➜</button>
+  </div>
+
+  <!-- முதன்மை டாஷ்போர்டு -->
+  <div id="dashboardSection" style="display: none;">
+    <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding: 12px 18px;">
+      <div>
+        <h2 id="currentUserHeading" style="margin:0; font-size:1.2rem;">டாஷ்போர்டு</h2>
+        <small id="userRoleText" style="color: #64748b; font-weight: 500;"></small>
+      </div>
+      <div style="display:flex; gap: 6px; flex-wrap: wrap;">
+        <button class="btn btn-secondary btn-sm" onclick="syncDataFromCloud()">🔄 Refresh Cloud</button>
+        <button class="btn btn-secondary btn-sm" id="docketBtn" onclick="toggleDocketCalendar()">📅 நாள்குறிப்பு பலகை</button>
+        <button class="btn btn-secondary btn-sm" id="scorecardBtn" style="display:none;" onclick="toggleScorecard()">📊 மதிப்பீட்டு அட்டை</button>
+        <button class="btn btn-secondary btn-sm" id="chartsBtn" onclick="toggleCharts()">📈 வரைபடம்</button>
+        <button class="btn btn-success btn-sm" onclick="exportToExcel()">📊 Excel (அனைத்தும்)</button>
+        <button class="btn btn-warning btn-sm" onclick="exportPendingToExcel()" id="exportPendingBtn" style="display:none;">📊 Excel (நிலுவை மட்டும்)</button>
+        <button class="btn btn-archive btn-sm" id="archiveBtn" style="display:none;" onclick="openArchiveModal()">📦 காப்பகம் (Archive)</button>
+        <button class="btn btn-warning btn-sm" id="monthlyReportBtn" style="display:none;" onclick="generateMonthlyArrearReport()">📑 மாதாந்திர அறிக்கை</button>
+        <button class="btn btn-danger btn-sm" id="adminConsolidatedPendingBtn" style="display:none;" onclick="generateAdminConsolidatedPendingSlip()">📋 ஒட்டுமொத்த நிலுவை அறிக்கை</button>
+        <button class="btn btn-secondary btn-sm" id="handoverBtn" style="display:none;" onclick="generateHandoverSlip()">📋 பொறுப்பு ஒப்படைப்பு</button>
+        <button class="btn btn-secondary btn-sm" id="schoolPendingSlipBtn" style="display:none;" onclick="generateSchoolPendingSlip()">🖨️ நிலுவை அறிக்கை அச்சு</button>
+        <button class="btn btn-secondary btn-sm" id="contactsSettingsBtn" style="display:none;" onclick="openContactsModal()">📞 JA & HM</button>
+      </div>
+    </div>
+
+    <!-- அட்மின் கட்டுப்பாட்டுப் பலகம் மற்றும் 'School Circular' பகுதி (அட்மின் லாகின் செய்தால் மட்டுமே காட்டும்) -->
+    <div id="adminSchoolCircularPanel" class="card" style="display: none; background: #f8fafc; border: 1px solid #cbd5e1;">
+      <h3 style="margin-top: 0; color: var(--gov-dark); font-size: 1.1rem;">அட்மின் கட்டுப்பாட்டுப் பலகம் (Admin Panel)</h3>
+      <p style="margin: 0 0 15px 0; font-size: 0.85rem; color: #64748b;">பிரிவு எழுத்தர் - பிரிவு அ2</p>
+      
+      <div style="border-top: 1px solid var(--border); padding-top: 15px;">
+        <h4 style="color: #0f172a; font-size: 1rem; margin-bottom: 10px;">📢 School Circular (பள்ளி சுற்றறிக்கை அனுப்புதல்)</h4>
+        <div style="display: grid; gap: 10px;">
+          <div>
+            <label>பள்ளியைத் தேர்ந்தெடுக்கவும்:</label>
+            <select id="adminCircularSchoolSelect" class="form-control">
+              <option value="">-- பள்ளியைத் தேர்ந்தெடுக்கவும் --</option>
+            </select>
+          </div>
+          <div>
+            <label>சுற்றறிக்கை செய்தி:</label>
+            <textarea id="adminCircularMsgInput" rows="3" placeholder="குறிப்பிட்ட பள்ளிக்கு அனுப்ப வேண்டிய செய்தியை இங்கே தட்டச்சு செய்யவும்..."></textarea>
+          </div>
+          <div>
+            <button class="btn btn-primary btn-sm" onclick="saveAdminSchoolCircular()">📤 சுற்றறிக்கையைப் பதிவு செய்</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- பள்ளி செயல்பாட்டு மதிப்பீட்டு அட்டை -->
+    <div id="scorecardSection" class="card" style="display: none; border-left: 6px solid #0284c7; background: #f8fafc;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h3 style="margin:0; color:#0369a1;">📊 பள்ளி வாரியான செயல்பாட்டு மதிப்பீட்டு அட்டை (School Compliance & Performance Scorecard)</h3>
+        <button class="btn btn-sm btn-secondary" onclick="toggleScorecard()">மூடு ✕</button>
+      </div>
+      <p style="margin:0 0 12px 0; font-size:0.84rem; color:#475569;">மதிப்புகளின் மீது கிளிக் செய்து சம்மந்தப்பட்ட கோப்பு பட்டியலைக் காணலாம்:</p>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>பள்ளியின் பெயர்</th>
+              <th>மொத்த மனுக்கள்</th>
+              <th>முடிவுற்றவை</th>
+              <th>நிலுவை</th>
+              <th>Return / நிராகரிப்பு</th>
+              <th>செயல்பாட்டு மதிப்பெண் (Score)</th>
+              <th>மதிப்பீடு (Grade)</th>
+            </tr>
+          </thead>
+          <tbody id="scorecardTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- நாள்குறிப்பு & நினைவூட்டல் பலகை -->
+    <div id="docketCalendarSection" class="card" style="display:none; border-left: 6px solid #d97706; background: #fffdf5;">
+      <h3 style="color:#b45309; margin-bottom:6px;">📅 உதவியாளர் நாள்குறிப்பு & மறுபார்வை நினைவூட்டல் (Follow-up Docket)</h3>
+      <p style="font-size:0.85rem; color:#78350f; margin-top:0;">இன்று அல்லது முந்தைய நாட்களில் மறுபரிசீலனைக்குக் குறித்த கோப்புகள்:</p>
+      <div id="docketReminderList" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:10px;"></div>
+    </div>
+
+    <!-- MIS வரைபடங்கள் -->
+    <div id="chartsSection" class="card" style="display: none;">
+      <h3>📊 கோப்பு நிலவர பகுப்பாய்வு & நகர்வு வரைபடம்</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom:16px;">
+        <div style="background:#f8fafc; padding:12px; border-radius:10px; text-align:center;">
+          <h4 style="font-size:0.9rem; margin-bottom:8px;">கோப்பு நிலைகள்</h4>
+          <canvas id="statusChart" style="max-height:190px;"></canvas>
+        </div>
+        <div style="background:#f8fafc; padding:12px; border-radius:10px; text-align:center;">
+          <h4 style="font-size:0.9rem; margin-bottom:8px;">மனு வகைப்பாடு நிலவரம்</h4>
+          <canvas id="categoryChart" style="max-height:190px;"></canvas>
+        </div>
+      </div>
+      <div style="background:#f0f9ff; padding:14px; border-radius:10px; border:1px solid #bae6fd;">
+        <h4 style="color:#0369a1; margin-bottom:6px;">📈 தினசரி கோப்புப் பரிமாற்ற சுருக்கம்</h4>
+        <p id="dailySummaryText" style="margin:0; font-size:0.88rem; color:#0369a1; font-weight:600;"></p>
+      </div>
+    </div>
+
+    <!-- புள்ளிவிவரக் கட்டங்கள் -->
+    <div class="stats-bar">
+      <div class="stat-box active" onclick="setFilter('ALL')" id="filterAll">
+        <h3 id="statTotal">0</h3>
+        <p>மொத்தக் கோப்புகள்</p>
+      </div>
+      <div class="stat-box" onclick="setFilter('PENDING')" id="filterPending">
+        <h3 id="statPending" style="color: #d97706;">0</h3>
+        <p>நிலுவையில் உள்ளவை</p>
+      </div>
+      <div class="stat-box" onclick="setFilter('COMPLETED')" id="filterCompleted">
+        <h3 id="statCompleted" style="color: #16a34a;">0</h3>
+        <p>முடிவுற்றவை / நிராகரிப்பு</p>
+      </div>
+      <div class="stat-box" onclick="setFilter('URGENT')" id="filterUrgent">
+        <h3 id="statUrgent" style="color: #dc2626;">0</h3>
+        <p>🚨 அவசரக் கோப்புகள்</p>
+      </div>
+      <div class="stat-box" onclick="setFilter('OVERDUE')" id="filterOverdue">
+        <h3 id="statOverdue" style="color: #b91c1c;">0</h3>
+        <p>⚠️ காலாவதியானவை</p>
+      </div>
+      <div class="stat-box" onclick="setFilter('THIS_MONTH')" id="filterMonth">
+        <h3 id="statThisMonth" style="color: #0284c7;">0</h3>
+        <p>📅 இந்த மாத மனுக்கள்</p>
+      </div>
+    </div>
+
+    <!-- பள்ளி பயனர் தேடல் பெட்டி -->
+    <div id="schoolSearchContainer" class="card" style="display: none; border-left: 5px solid var(--accent);">
+      <h3>🔍 உங்கள் பள்ளி பதிவேடு எண் கொண்டு நிலை அறிதல்</h3>
+      <div style="display:flex; gap: 10px;">
+        <input type="text" id="trackSchoolRegNo" placeholder="பதிவேடு எண் உள்ளிடவும் (எ.கா. ந.க. 12/2026)">
+        <button class="btn" onclick="trackSingleFile()">தேடு</button>
+      </div>
+      <div id="trackResult"></div>
+    </div>
+
+    <!-- புதிய மனு பதிவு (Section Assistant Only) -->
+    <div id="adminEntryContainer" class="card" style="display: none; border-top: 4px solid var(--gov-blue);">
+      <h3 style="color:var(--gov-blue);">+ புதிய கோரிக்கை மனு பதிவு (பிரிவு அ2)</h3>
+      <form id="newRequestForm" onsubmit="addRequest(event)">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+          <div class="form-group">
+            <label>அலுவலக கோப்பு எண்:</label>
+            <input type="text" id="entryOfficeNo" placeholder="எ.கா. A2/1045/2026" required>
+          </div>
+          <div class="form-group">
+            <label>அலுவலக தேதி:</label>
+            <input type="date" id="entryOfficeDate" required>
+          </div>
+          <div class="form-group">
+            <label>முந்தைய கோப்பு ந.க. எண்:</label>
+            <input type="text" id="entryPrevRefNo" placeholder="எ.கா. ந.க. 450/A2/2025">
+          </div>
+          <div class="form-group">
+            <label>பள்ளி / அலுவலக பெயர்:</label>
+            <select id="entrySchool" required>
+              <option value="SCH_1">பெரியசாமி உயர்நிலைப்பள்ளி அம்மாபேட்டை</option>
+              <option value="SCH_2">புனித செபஸ்தியார் உயர்நிலைப்பள்ளி நகலூர்</option>
+              <option value="SCH_3">புனித மைக்கேல் மேல்நிலைப்பள்ளி, மைக்கேல்பாளையம்</option>
+              <option value="SCH_4">சக்தி மேல்நிலைப்பள்ளி நாச்சிமுத்துபுரம்</option>
+              <option value="SCH_5">கொமரப்பா செங்குந்தர் மேல்நிலைப்பள்ளி சென்னிமலை</option>
+              <option value="SCH_OTHERS">Others (இதர பள்ளிகள் / அலுவலகங்கள்)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>பள்ளி பதிவேடு எண் (Optional):</label>
+            <input type="text" id="entrySchoolRegNo" placeholder="எ.கா. ந.க.எண் 12/2026">
+          </div>
+          <div class="form-group">
+            <label>அலமாரி இருப்பிடம் (Rack / Bundle):</label>
+            <input type="text" id="entryRackLocation" placeholder="எ.கா. Rack 3 / Bundle A">
+          </div>
+          <div class="form-group">
+            <label>தீர்வு காலக்கெடு (SLA Days):</label>
+            <select id="entrySlaDays">
+              <option value="5">5 நாட்கள்</option>
+              <option value="10">10 நாட்கள்</option>
+              <option value="15">15 நாட்கள்</option>
+              <option value="20">20 நாட்கள்</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>மனு வகைப்பாடு (Category):</label>
+            <select id="entryCategory" required>
+              <option value="ML">ML (மருத்துவ விடுப்பு)</option>
+              <option value="EL">EL (ஈட்டிய விடுப்பு)</option>
+              <option value="Surrender">Surrender (விடுப்பு ஒப்படைப்பு)</option>
+              <option value="TPF Part Final">TPF Part Final</option>
+              <option value="Retirement Benefits">Retirement Benefits</option>
+              <option value="Promotion">Promotion (பதவி உயர்வு)</option>
+              <option value="Direct Appointment">Direct Appointment</option>
+              <option value="Relieving">Relieving (பணிவிடுவிப்பு)</option>
+              <option value="Salary">Salary (ஊதியம்)</option>
+              <option value="Court Case">Court Case</option>
+              <option value="Meeting Agenda">Meeting Agenda</option>
+              <option value="Common">Common (பொதுவானவை)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>முன்னுரிமை (Priority):</label>
+            <select id="entryPriority">
+              <option value="சாதாரணமானது (Normal)">சாதாரணமானது (Normal)</option>
+              <option value="முக்கியமானது (Important)">முக்கியமானது (Important)</option>
+              <option value="மிக அவசரம் (Urgent)">🚨 மிக அவசரம் (Urgent)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>கோரிக்கை விவரம் & பொருள்:</label>
+          <textarea id="entrySubject" rows="2" placeholder="கோரிக்கையின் தலைப்பு மற்றும் விவரங்களை உள்ளிடவும்..." required></textarea>
+        </div>
+        <button type="submit" id="submitBtn" class="btn">கோப்பினைப் பதிவு செய் 💾</button>
+      </form>
+    </div>
+
+    <!-- கோப்புகள் அட்டவணை -->
+    <div class="card" id="filesListAnchor">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <h3 id="listHeading" style="margin:0;">📋 கோப்புகள் பட்டியல்</h3>
+          
+          <select id="schoolSpecificFilter" onchange="filterBySpecificSchool(this.value)" style="padding:6px 8px; font-size:0.82rem; max-width:200px; display:none;">
+            <option value="ALL">அனைத்துப் பள்ளிகள்</option>
+            <option value="SCH_1">பெரியசாமி உ.நி.பள்ளி</option>
+            <option value="SCH_2">புனித செபஸ்தியார் உ.நி.பள்ளி</option>
+            <option value="SCH_3">புனித மைக்கேல் மே.நி.பள்ளி</option>
+            <option value="SCH_4">சக்தி மே.நி.பள்ளி</option>
+            <option value="SCH_5">கொமரப்பா செங்குந்தர் மே.நி.பள்ளி</option>
+            <option value="SCH_OTHERS">இதர பள்ளிகள் (Others)</option>
+          </select>
+
+          <select id="categoryFilter" onchange="filterByCategory(this.value)" style="padding:6px 8px; font-size:0.82rem; max-width:160px;">
+            <option value="ALL">அனைத்து வகைப்பாடுகள்</option>
+            <option value="ML">ML</option>
+            <option value="EL">EL</option>
+            <option value="Surrender">Surrender</option>
+            <option value="TPF Part Final">TPF Part Final</option>
+            <option value="Retirement Benefits">Retirement Benefits</option>
+            <option value="Promotion">Promotion</option>
+            <option value="Direct Appointment">Direct Appointment</option>
+            <option value="Relieving">Relieving</option>
+            <option value="Salary">Salary</option>
+            <option value="Court Case">Court Case</option>
+            <option value="Meeting Agenda">Meeting Agenda</option>
+            <option value="Common">Common</option>
+          </select>
+
+          <!-- தேதி Filter -->
+          <div style="display:flex; align-items:center; gap:4px;">
+            <input type="date" id="filterStartDate" style="padding:4px 6px; font-size:0.78rem; width:125px;">
+            <span>-</span>
+            <input type="date" id="filterEndDate" style="padding:4px 6px; font-size:0.78rem; width:125px;">
+            <button class="btn btn-sm btn-secondary" onclick="applyDateRangeFilter()">தேதி Filter</button>
+            <button class="btn btn-sm btn-danger" onclick="resetDateRangeFilter()" title="தேதி வடிகட்டலை ரத்து செய்">✕</button>
+          </div>
+        </div>
+        
+        <input type="text" id="liveSearchInput" onkeyup="filterLiveTable()" placeholder="🔍 விரைவுத் தேடல்..." style="max-width:220px; padding:6px 10px; font-size:0.86rem;">
+      </div>
+      
+      <div style="overflow-x:auto;">
+        <table id="mainFilesTable">
+          <thead>
+            <tr>
+              <th>முக்கியத்துவம்</th>
+              <th>அலுவலக எண், தேதி & முந்தைய ந.க.</th>
+              <th>பள்ளி பதிவேடு எண்</th>
+              <th id="schoolColHeader">பள்ளியின் பெயர்</th>
+              <th>மனு வகை</th>
+              <th>கோரிக்கை விவரம் & குறிப்புகள் (Quick Notes)</th>
+              <th>இருப்பிடம் (Rack)</th>
+              <th>காலக்கெடு (SLA)</th>
+              <th>யாரிடம் நிலுவை</th>
+              <th>நிலை</th>
+              <th>செயல்பாடுகள்</th>
+            </tr>
+          </thead>
+          <tbody id="filesTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- 📦 காப்பக பாப்-அப் -->
@@ -702,33 +806,10 @@
       </select>
     </div>
 
-    <div class="form-group" id="terminalOfficeInfo" style="display:none; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #cbd5e1;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div><label style="font-weight:bold;">ஓ.மு. எண்:</label><input type="text" id="modalOMUNo" placeholder="ஓ.மு.எண்"></div>
-        <div><label style="font-weight:bold;">நாள்:</label><input type="date" id="modalOMUDate"></div>
-        <div><label style="font-weight:bold;">மூ.மு. எண்:</label><input type="text" id="modalMMUNo" placeholder="மூ.மு.எண்"></div>
-        <div><label style="font-weight:bold;">நாள்:</label><input type="date" id="modalMMUDate"></div>
-      </div>
-    </div>
-
     <!-- திருப்பப்பட்டது / நிராகரிக்கப்பட்டால் தபால் அனுப்பிய தேதி -->
     <div class="form-group" id="dispatchDateGroup" style="display:none; background:#f0fdf4; padding:10px; border-radius:8px; border:1px solid #bbf7d0;">
       <label style="color:#166534; font-weight:bold;">📤 தபால் அனுப்பிய தேதி (Dispatch Date):</label>
       <input type="date" id="modalDispatchDate">
-    </div>
-
-    <!-- AG OFFICE க்கான பிரத்யேக பகுதிகள் -->
-    <div class="form-group" id="agOfficeGroup" style="display:none; background:#eff6ff; padding:10px; border-radius:8px; border:1px solid #bfdbfe;">
-      <div id="agPostTrackSection" style="margin-bottom:8px;">
-        <label style="color:#1e40af; font-weight:bold;">📮 Post Track ID:</label>
-        <input type="text" id="modalPostTrackId" placeholder="எ.கா. Speed Post No: EE123456789IN" style="margin-bottom:6px;">
-        <label style="color:#1e40af; font-size:0.82rem;">அனுப்பிய தேதி:</label>
-        <input type="date" id="modalAgDispatchDate">
-      </div>
-      <div id="agDispatchSection" style="display:none;">
-        <label style="color:#1e40af; font-weight:bold;">📤 தபால் அனுப்பிய தேதி (Dispatch Date):</label>
-        <input type="date" id="modalAgReturnDispatchDate">
-      </div>
     </div>
 
     <div class="form-group">
@@ -736,7 +817,7 @@
       <input type="file" id="modalDeoAttachment" accept="image/*,application/pdf" style="padding:6px;">
     </div>
 
-    <div class="form-group" id="docketDateGroup">
+    <div class="form-group">
       <label>மறுபரிசீலனை நினைவூட்டல் தேதி (Docket / Follow-up Date):</label>
       <input type="date" id="modalDocketDate">
     </div>
@@ -786,7 +867,7 @@
     <div style="display:flex; gap:10px; margin-top:15px; flex-wrap:wrap;">
       <button onclick="saveNoticeBoardData()" id="publishNoticeBtn" class="btn btn-notice" style="flex:1;">கிளவுடில் வெளியிடு (Publish)</button>
       <button onclick="broadcastNoticeToSchools()" class="btn btn-ja" style="flex:1;" title="அனைத்து பள்ளிகளுக்கும் WhatsApp மூலம் அனுப்ப">💬 WhatsApp Broadcast</button>
-      <button onclick="closeNoticeModal()" class="btn btn-danger" style="flex:1;">மூடு</button>
+      <button onclick="closeNoticeModal()" class="btn btn-danger">மூடு</button>
     </div>
   </div>
 </div>
@@ -839,7 +920,7 @@
     </div>
     <div class="form-group">
       <label>புதிய கடவுச்சொல்:</label>
-      <input type="password" id="newPwdInput" placeholder="கடவுச்சொல்லை உள்ளிடவும்">
+      <input type="password" id="newPwdInput" placeholder="புதிய கடவுச்சொல்லை உள்ளிடவும்">
     </div>
     <div style="display:flex; gap:10px;">
       <button onclick="saveNewPassword()" class="btn" style="flex:1;">சேமி</button>
@@ -850,14 +931,12 @@
 
 <!-- 🏷️ Sticker & QR Options Modal -->
 <div id="stickerOptionsModal" class="modal" style="display:none;">
-  <div class="modal-content" style="max-width:850px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;">
+  <div class="modal-content" style="max-width:650px; text-align:center;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
       <h3 style="margin:0;color:#0c4a6e;">🏷️ கோப்பு Sticker & QR Code</h3>
       <button class="btn btn-sm btn-danger" onclick="closeStickerOptions()">மூடு ✕</button>
     </div>
-    <div style="padding:15px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;">
-      <div id="stickerPreview" style="background:#fff;border:1.5px solid #111;padding:18px;box-sizing:border-box;font-family:'TAU-Marutham','Segoe UI',sans-serif;font-size:11pt;color:#111;"></div>
-    </div>
+    <div id="stickerPreview" style="background:#fff;border:1.5px solid #111;padding:15px;margin:15px auto;width:100%;max-width:500px;box-sizing:border-box;text-align:left;font-family:Arial,sans-serif;"></div>
     <div style="display:flex;gap:10px;justify-content:center;margin-top:15px;">
       <button class="btn btn-success" onclick="printFileSticker()">🖨️ Print Sticker</button>
       <button class="btn btn-secondary" onclick="closeStickerOptions()">ரத்து</button>
@@ -970,7 +1049,7 @@
 
   function broadcastNoticeToSchools() {
     const notice = getNoticeBoardData();
-    const msg = `*மாவட்டக் கல்வி அலுவலகம் (இடைநிலை), ஈரோடு*\n*பிரிவு: அ2 - பொது அறிவிப்பு*\n\n📅 *நாள்:* ${formatTamilDate(notice.date)}\n\n📢 *அறிவிப்பு / சுற்றறிக்கை விவரம்:*\n${notice.content}\n\n_அனைத்துப் பள்ளித் தலைமையாசிரியர்களும் உரிய நடவடிக்கை மேற்கொள்ளுமாறு கேட்டுக்கொள்ளப்படுகிறார்கள்._`;
+    const msg = `*மாவட்டக் கல்வி அலுவலகம் (இடைநிலை), ஈரோடு*\n*பிரிவு: அ2 - பொது அறிவிப்பு*\n\n📅 *நாள்:* ${formatTamilDate(notice.date)}\n\n📢 *அறிவிப்பு விவரம்:*\n${notice.content}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
@@ -1039,12 +1118,6 @@
       document.getElementById('loginSection').style.display = 'none';
       document.getElementById('dashboardSection').style.display = 'block';
       document.getElementById('headerUserActions').style.display = 'flex';
-      
-      if (user === "ADMIN") {
-        document.getElementById('appSidebar').style.display = 'flex';
-      } else {
-        document.getElementById('appSidebar').style.display = 'none';
-      }
 
       document.getElementById('passwordInput').value = '';
       setupDashboard();
@@ -1059,7 +1132,6 @@
     document.getElementById('loginSection').style.display = 'block';
     document.getElementById('dashboardSection').style.display = 'none';
     document.getElementById('headerUserActions').style.display = 'none';
-    document.getElementById('appSidebar').style.display = 'none';
     
     document.getElementById('adminNoticeAction').style.display = 'none';
     document.getElementById('schoolStickyNoteSection').style.display = 'none';
@@ -1105,27 +1177,6 @@
     archivedFiles = getArchivedFiles();
     renderDashboard();
     syncDataFromCloud();
-  }
-
-  // Sidebar Menu Actions Routing
-  function switchSidebarTab(tab) {
-    if (tab === 'schoolLogin') {
-      alert("பள்ளிகள் தங்களது தனித்தனி கடவுச்சொல் மூலம் போர்ட்டலில் உள்நுழையலாம்.");
-    } else if (tab === 'sectionAdmin') {
-      scrollToSection('listHeading');
-    } else if (tab === 'newEntry') {
-      scrollToSection('adminEntryContainer');
-    }
-  }
-
-  function scrollToSection(id) {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-  }
-
-  function toggleSubMenu(id) {
-    const el = document.getElementById(id);
-    if (el) el.style.display = el.style.display === 'none' ? 'flex' : 'none';
   }
 
   function populateAdminSchoolDropdown() {
@@ -1215,7 +1266,7 @@
       return new Date(b.officeDate || 0) - new Date(a.officeDate || 0);
     });
 
-    // முடிவுற்றவை கணக்கீடு (முடிவுற்றது, திருப்பப்பட்டது, நிராகரிக்கப்பட்டது, Return அனைத்தும் அடங்கும்)
+    // காலாவதியாகி திருப்பப்பட்டது, முடிவுற்றது, நிராகரிக்கப்பட்டது அனைத்தும் முடிவுற்றவை கணக்கில் வரும்
     const completedCount = accessibleFiles.filter(f => f.status === 'முடிவுற்றது' || f.status === 'நிராகரிக்கப்பட்டது' || f.status === 'திருப்பப்பட்டது' || f.status === 'Return').length;
     const pendingCount = accessibleFiles.filter(f => f.status !== 'முடிவுற்றது' && f.status !== 'நிராகரிக்கப்பட்டது' && f.status !== 'திருப்பப்பட்டது' && f.status !== 'Return').length;
 
@@ -1301,7 +1352,7 @@
               ${file.status === 'முடிவுற்றது' ? `<button class="btn btn-sm btn-archive" onclick="archiveSingleFile(decodeURIComponent('${safeOfficeNo}'))">📦 Archive</button>` : ''}
               <button class="btn btn-sm btn-danger" onclick="deleteFile(decodeURIComponent('${safeOfficeNo}'))">🗑️ நீக்கு</button>
             ` : ''}
-            ${file.deoAttachment ? `<button class="btn btn-sm btn-warning" onclick="viewAttachment(decodeURIComponent('${safeOfficeNo}'))">📥 Download Order</button>` : ''}
+            ${file.deoAttachment ? `<a href="${file.deoAttachment}" target="_blank" class="btn btn-sm btn-warning" download="DEO_Order_${file.officeNo}.pdf">📥 Download Order</a>` : ''}
           </div>
         </td>
       `;
@@ -1344,7 +1395,7 @@
 
   function openEditModal(officeNo) {
     const file = getFileSafely(officeNo);
-    if (!file) { alert("கோப்பு கிடைக்கவில்லை"); return; }
+    if (!file) return;
     document.getElementById('editOriginalOfficeNo').value = file.officeNo;
     document.getElementById('editOfficeNo').value = file.officeNo;
     document.getElementById('editOfficeDate').value = normalizeDateOnly(file.officeDate);
@@ -1417,9 +1468,6 @@
 
   function closeStatusModal() { document.getElementById('statusModal').style.display = 'none'; }
 
-  function handleOfficerSelection(of) {}
-  function handleStatusSelection(status) {}
-
   function saveStatusUpdate() {
     const officeNo = document.getElementById('modalOfficeNo').value;
     const file = getFileSafely(officeNo);
@@ -1434,6 +1482,7 @@
 
   function closeNotifyModal() { document.getElementById('notifyModal').style.display = 'none'; }
   function toggleDocketCalendar() { const sec = document.getElementById('docketCalendarSection'); sec.style.display = sec.style.display === 'none' ? 'block' : 'none'; }
+  
   function toggleScorecard() {
     const sec = document.getElementById('scorecardSection');
     sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
@@ -1476,6 +1525,72 @@
     else if(type === 'PENDING') setFilter('PENDING');
     else setFilter('ALL');
     scrollToSection('filesListAnchor');
+  }
+
+  function scrollToSection(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function generateHandoverSlip() {
+    const pendingFiles = memoryFiles.filter(f => f.status !== 'முடிவுற்றது' && f.status !== 'நிராகரிக்கப்பட்டது');
+    let rows = '';
+    pendingFiles.forEach((f, i) => {
+      rows += `
+        <tr>
+          <td style="border: 1px solid #000; padding: 4px; text-align: center;">${i + 1}</td>
+          <td style="border: 1px solid #000; padding: 4px; font-weight: bold;">${f.officeNo}<br><small>${formatTamilDate(f.officeDate)}</small></td>
+          <td style="border: 1px solid #000; padding: 4px;">${SCHOOL_NAMES[f.schoolId] || 'Others'}</td>
+          <td style="border: 1px solid #000; padding: 4px;">${f.category}</td>
+          <td style="border: 1px solid #000; padding: 4px;">${f.subject}</td>
+          <td style="border: 1px solid #000; padding: 4px;">${f.rackLocation || 'A2'}</td>
+          <td style="border: 1px solid #000; padding: 4px; font-weight: bold;">${f.currentWith || 'பிரிவு எழுத்தர்'}</td>
+        </tr>
+      `;
+    });
+    const win = window.open('', '_blank');
+    win.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Handover_Slip</title>
+        <style>
+          @page { size: A4 portrait; margin: 10mm; }
+          body { font-family: 'Segoe UI', Arial, sans-serif; color: #000; margin: 0; padding: 10px; }
+          table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+        </style>
+      </head>
+      <body>
+        <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 12px;">
+          <h2 style="margin:0; font-size: 1.2rem;">மாவட்டக் கல்வி அலுவலகம் (இடைநிலை), ஈரோடு</h2>
+          <h3 style="margin:3px 0 0 0; text-decoration: underline;">பிரிவு: அ2 - கோப்புகள் பொறுப்பு ஒப்படைப்புப் பதிவேடு (Charge Handover Slip)</h3>
+          <p style="margin:3px 0 0 0; font-size: 0.85rem;">ஒப்படைக்கும் நாள்: ${formatTamilDate(getLocalDateString())}</p>
+        </div>
+        <p>இவ்வலுவலக அ2 பிரிவில் தற்போது நிலுவையில் உள்ள பின்வரும் <b>${pendingFiles.length}</b> கோப்புகளின் விபரம் மற்றும் ஆவணங்கள் முழுமையாக மாற்றுப் பணியாளரிடம் ஒப்படைக்கப்படுகிறது:</p>
+        <table>
+          <thead>
+            <tr style="background:#e2e8f0;">
+              <th style="border: 1px solid #000; padding: 5px; width: 30px;">வ.எண்</th>
+              <th style="border: 1px solid #000; padding: 5px; width: 120px;">அலுவலக எண் & தேதி</th>
+              <th style="border: 1px solid #000; padding: 5px; width: 140px;">பள்ளியின் பெயர்</th>
+              <th style="border: 1px solid #000; padding: 5px; width: 70px;">வகை</th>
+              <th style="border: 1px solid #000; padding: 5px;">பொருள்</th>
+              <th style="border: 1px solid #000; padding: 5px; width: 60px;">Rack</th>
+              <th style="border: 1px solid #000; padding: 5px; width: 110px;">யாரிடம் நிலுவை</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div style="margin-top: 50px; display: flex; justify-content: space-between; font-weight: bold; font-size: 0.85rem;">
+          <div><p>ஒப்படைப்பவர் கையொப்பம்<br><span style="font-weight:normal;">து.சதீஷ்குமார், உதவியாளர் (அ2)</span></p></div>
+          <div><p>பெற்றுக்கொள்பவர் கையொப்பம்<br><span style="font-weight:normal;">மாற்றுப் பொறுப்பு உதவியாளர்</span></p></div>
+          <div><p>கண்காணிப்பாளர் / PA</p></div>
+        </div>
+      </body>
+      </html>
+    `);
+    win.document.close();
+    setTimeout(() => { win.print(); }, 300);
   }
 
   function openArchiveModal() { document.getElementById('archiveModal').style.display = 'flex'; }
